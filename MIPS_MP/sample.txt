@@ -1,0 +1,5 @@
+
+
+J 0xBCD4
+BEQ r1, r5, 0xABC4
+NOP
