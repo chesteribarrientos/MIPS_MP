@@ -1,8 +1,9 @@
 package instruction_set;
 
 import interfaces.IConverter;
+import interfaces.IExecutor;
 
-public class BEQ implements IConverter{
+public class BEQ implements IConverter, IExecutor{
 
 	@Override
 	public int getOpcode(String statement) {
@@ -16,6 +17,12 @@ public class BEQ implements IConverter{
 		int finalOpcode = (opcode << 26) | (rs << 21) | (rt << 16) | offset;
 		
 		return finalOpcode;
+	}
+
+	@Override
+	public void execute(int opcode) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
