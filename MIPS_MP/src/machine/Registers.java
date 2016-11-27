@@ -5,42 +5,42 @@ import java.util.Map;
 
 public class Registers {
 
-	private Map<String, Integer> GPR;
-	private Map<String, Integer> FPR;
-	private int PC;
+	private Map<Integer, Long> gpr;
+	private Map<Integer, Long> fpr;
+	
+	private long PC;
 	private int HI;
 	private int LO;
 	
 	public Registers(){
-		GPR = new HashMap<String, Integer>();
-		FPR = new HashMap<String, Integer>();
-		
+		gpr = new HashMap<Integer, Long>();
+		fpr = new HashMap<Integer, Long>();
 		for(int i = 0; i < 32; i++){
-			GPR.put("r" + i, 0x000000);
-			FPR.put("f" + i, 0x000000);
+			gpr.put(i, 0L);
+			fpr.put(i, 0L);
 		}
 	}
 	
-	public void storeToGPR(String gpr, int value){
-		GPR.put(gpr, value);
+	public void storeToGPR(int key, long value){
+		gpr.put(key, value);
 	}
 	
-	public int getFromGPR(String gpr){
-		return GPR.get(gpr);
+	public long getFromGPR(int key){
+		return gpr.get(key);
 	}
 	
-	public void storeToFPR(String fpr, int value){
-		FPR.put(fpr, value);
+	public void storeToFPR(int key, long value){
+		fpr.put(key, value);
 	}
 	
-	public int getFromFPR(String fpr){
-		return FPR.get(fpr);
+	public long getFromFPR(int key){
+		return fpr.get(key);
 	}
 	
-	public void setPC(int value){
+	public void setPC(long value){
 		PC = value;
 	}
-	public int getPC(){
+	public long getPC(){
 		return PC;
 	}
 }
