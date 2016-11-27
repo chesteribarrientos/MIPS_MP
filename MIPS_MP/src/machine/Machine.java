@@ -2,6 +2,11 @@ package machine;
 
 import config.Config;
 
+/**
+ * 
+ * @author Chester
+ *
+ */
 public class Machine {
 
 	private Registers registers;
@@ -27,8 +32,9 @@ public class Machine {
 		return memory;
 	}
 
-	/** simplified controls for registers 
-	 * **/
+	/**
+	 * simplified controls for registers
+	 **/
 	public void loadToGPR(int gprNum, long value) {
 		registers.storeToGPR(gprNum, value);
 	}
@@ -36,11 +42,11 @@ public class Machine {
 	public void loadToGPRunsigned(int gprNum, int value) {
 		registers.storeToGPR(gprNum, Integer.toUnsignedLong(value));
 	}
-	
-	public void loadToGPRunsigned(int gprNum, short value){
+
+	public void loadToGPRunsigned(int gprNum, short value) {
 		registers.storeToGPR(gprNum, Short.toUnsignedLong(value));
 	}
-	
+
 	public void loadToFPR(int fprNum, long value) {
 		registers.storeToFPR(fprNum, value);
 	}
@@ -48,13 +54,14 @@ public class Machine {
 	public void loadToFPRunsigned(int fprNum, int value) {
 		registers.storeToFPR(fprNum, Integer.toUnsignedLong(value));
 	}
-	
-	public void loadToFPRunsigned(int fprNum, short value){
+
+	public void loadToFPRunsigned(int fprNum, short value) {
 		registers.storeToFPR(fprNum, Short.toUnsignedLong(value));
 	}
-	
-	/** simplified controls for memory 
-	 * **/
+
+	/**
+	 * simplified controls for memory
+	 **/
 	public void loadDoubleWordToMemory(int address, long value) {
 		memory.loadToMemory(address, 8, value);
 	}

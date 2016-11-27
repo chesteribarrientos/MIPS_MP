@@ -2,6 +2,12 @@ package instruction_set;
 
 import interfaces.IConverter;
 
+/**
+ * 
+ * @author Chester
+ *
+ */
+
 public enum Instruction {
 
 	/** J Type**/
@@ -9,6 +15,10 @@ public enum Instruction {
 	
 	/** I Type**/
 	BEQ		(new BEQ(), "BEQ"),
+	SLTI	(new SLTI(), "SLTI"),
+	LUI		(new LUI(), "LUI"),
+	LB		(new LB(), "LB"),
+	LH		(new LH(), "LH"),
 	
 	/** R Type**/
 	NOP		(new NOP(), "NOP");

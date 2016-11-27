@@ -2,7 +2,12 @@ package instruction_set;
 
 import interfaces.IConverter;
 
-public class NOP implements IConverter{
+/**
+ * 
+ * @author Chester
+ *
+ */
+public class NOP implements IConverter {
 
 	@Override
 	public int getOpcode(String statement) {
