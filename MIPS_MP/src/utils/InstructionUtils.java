@@ -21,7 +21,7 @@ public class InstructionUtils {
 	public static Instruction getInstructionEnum(String statement) {
 		String name = getInstructionName(statement);
 		for (Instruction i : Instruction.values()) {
-			if (i.name().equals(name)) {
+			if (i.name().equalsIgnoreCase(name)) {
 				return i;
 			}
 		}
