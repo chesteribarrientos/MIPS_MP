@@ -28,5 +28,5 @@ public class Opcode {
         
         public static int BC	= 0b110010;
         public static int BEQC = 0b001000;
-        
+        public static int NOP = 0x0;
 }

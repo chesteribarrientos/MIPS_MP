@@ -27,8 +27,9 @@ public class TestOpcodeReturn {
 		Print.as64bitHex(opcode);
 		*/
 		
-		Instruction is = InstructionUtils.getInstructionEnum("DADDIU R4, R1, 0x0F02");
-		int opcode = is.getInstructionConverter().getOpcode("DADDIU R4, R1, 0x0F02");
+		Instruction is = InstructionUtils.getInstructionEnum("XOR R1, R1, R2");
+		int opcode = is.getInstructionConverter().getOpcode("XOR R1, R1, R2");
+		
 		Print.as32bitHex(opcode);
 	}
 }
