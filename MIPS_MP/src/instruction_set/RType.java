@@ -12,8 +12,8 @@ public class RType {
     public int getRegisterOps(String statement) {
         String[] words = statement.split("[,\\s]+");
         
-        if (!checkForErrors(words)) {
-        	int rs = Integer.parseInt(words[2].substring(1));
+        //if (!checkForErrors(words)) {
+            int rs = Integer.parseInt(words[2].substring(1));
             int rt = Integer.parseInt(words[3].substring(1));
             int rd = Integer.parseInt(words[1].substring(1));
             //int imm = Integer.parseInt(words[3], 16);
@@ -21,12 +21,12 @@ public class RType {
             
             int finalOpcode = (rs << 21) | (rt << 16) | (rd << 11);
             return finalOpcode;
-        }
+        //}
         
-        return Opcode.NOP;
+        //return Opcode.NOP;
     }
     
-    public boolean checkForErrors(String[] words) {
+    /*public boolean checkForErrors(String[] words) {
     	String regex = "^(R|F)([0-9]|[1-2][0-9]|3[0-1])$";
     	Pattern p = Pattern.compile(regex); // Change later when can't use R0 and special registers
     	Matcher m1 = p.matcher(words[1]);
@@ -39,5 +39,5 @@ public class RType {
     		}
     	}
     	return true;
-    }
+    }*/
 }

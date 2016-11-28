@@ -10,7 +10,7 @@ public class BC implements IConverter, IExecutor {
 	public int getOpcode(String statement) {
 		String[] words = statement.split("[,\\s]+");
 
-		int offset = Integer.decode(words[3]);
+		int offset = Integer.parseInt(words[1]);
 		int finalOpcode = (Opcode.BC << 26) | offset;
 
 		return finalOpcode;

@@ -184,6 +184,14 @@ public class MainView extends JFrame {
         return mb;
     }
     
+    private void resetTable(){
+        int rc = model.getRowCount();
+        for(int i=0;i<rc;i++){
+            model.removeRow(0);
+        }
+        model.setRowCount(0);
+    }
+    
     private void openFile() {
         jfc = new JFileChooser();
         FileFilter filter = new FileNameExtensionFilter("Assembly Files", "asm", "s");
@@ -193,6 +201,10 @@ public class MainView extends JFrame {
         int returnVal = jfc.showDialog(this, "Open File");
         
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+            resetTable();
+            System.out.println("Row Count: "+model.getRowCount());
+            
+            ta_log.append("\n");
             baseFile = jfc.getSelectedFile();
             ta_log.append("File " + baseFile.getName() + " Selected\n");
             try (BufferedReader reader = new BufferedReader(new FileReader(baseFile))) {
@@ -200,22 +212,19 @@ public class MainView extends JFrame {
             int i = 1;
             
             while ((line = reader.readLine()) != null) {
-                Instruction is = InstructionUtils.getInstructionEnum(line); //to get enum
-		int opcode = is.getInstructionConverter().getOpcode(line); //to execute conversion
-		//Print.as32bitHex(opcode);
-                String opCode = String.format("%08X", (int) opcode);
-                if("00000000".equals(opCode) && !line.startsWith("NOP")){
-                    ta_log.append("Invalid code at line "+i+"\n");
-                } else {;
+                if( isRType(line) | isIType(line) | isJType(line) ){
                     inst.add(line);
-                    updateOCTable(String.valueOf(i), line, opCode);
+                } else {
+                    ta_log.append("Invalid code at line "+i+"\n");
                 }
                 i++;
             }
             
-            for(int j=0; j<inst.size(); j++){
+            toBackEnd(inst);
+            
+            /*for(int j=0; j<inst.size(); j++){
                 System.out.println("Valid Instruction #"+(j+1)+": "+inst.get(j));
-            }
+            }*/
             
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -225,6 +234,97 @@ public class MainView extends JFrame {
         } else {
             ta_log.append("Open command cancelled by user\n");
         }
+    }
+    
+    public void toBackEnd(ArrayList<String> stuff){
+        for(int i=0; i<stuff.size(); i++){
+            String line = stuff.get(i).replaceAll("L[1-9]\\s*:\\s*","");
+            if(line.startsWith("BEQC") || line.startsWith("BC")){
+                line = forBranch(line, i);
+            }
+            //System.out.println("Line "+i+": "+line);
+            Instruction is = InstructionUtils.getInstructionEnum(line); //to get enum
+            int opcode = is.getInstructionConverter().getOpcode(line); //to execute conversion
+            String opCode = String.format("%08X", (int) opcode);
+            
+            if("00000000".equals(opCode) && !line.startsWith("NOP")){
+                ta_log.append("Invalid code at line "+i+"\n");
+            } else {
+                updateOCTable(String.valueOf(i+1), inst.get(i), opCode);
+            }
+        }
+    }
+    
+    public boolean isRType(String inst){
+        String temp0 = "\\s*(L[1-9]\\s*:\\s+)*";
+        String temp1 = "\\s*(XOR|DSUBU|SLT)\\s+";
+        String temp2 = "\\s*R([0-9]|[1-2][0-9]|3[0-1])";
+        String temp3 = "\\s*NOP\\s*$";
+        Pattern p1 = Pattern.compile(temp0
+                                   + temp1
+                                   + temp2 + "\\s*,\\s*"
+                                   + temp2 + "\\s*,\\s*"
+                                   + temp2 + "\\s*$"
+                                   + "|"+temp0+temp3); //Pattern match for XOR|DSUBU|SLT|NOP
+        Matcher m1 = p1.matcher(inst);
+        if(m1.find()){
+            //System.out.println("Valid RType code");
+            return true;
+        } else { }
+        return false;
+    }
+    
+    public boolean isIType(String inst){
+        String temp0 = "\\s*(L[1-9]\\s*:\\s+)*";
+        String temp1 = "\\s*(DADDIU)\\s+";
+        String temp2 = "\\s*R([0-9]|[1-2][0-9]|3[0-1])";
+        String temp3 = "\\s*(LD|SD)\\s+";
+        String temp4 = "\\s*(BEQC)\\s+";
+        String temp5 = "\\s*L[1-9]\\s*";
+        Pattern p1 = Pattern.compile(temp0 +
+                                     temp1
+                                   + temp2 + "\\s*,\\s*"
+                                   + temp2 + "\\s*,\\s*"
+                                   + "\\s*0x\\d{4}\\s*$" //Pattern match for DADDIU
+                                   + "|"+ temp0 + temp3
+                                   + temp2 + "\\s*,\\s*"
+                                   + "\\s*\\d{4}[(]"+temp2+"[)]\\s*$" //Pattern match for LD/SD
+                                   + "|" + temp4
+                                   + temp2 + "\\s*,\\s*"
+                                   + temp2 + "\\s*,\\s*"
+                                   + temp5 + "$");  //Pattern match for BEQC
+        Matcher m1 = p1.matcher(inst);
+        if(m1.find()){
+            //System.out.println("Valid IType code");
+            return true;
+        } else { }
+        return false;
+    }
+    
+    public boolean isJType(String inst){
+        String temp1 = "\\s*BC\\s+L[1-9]\\s*";
+        Pattern p1 = Pattern.compile(temp1); //Pattern match for BC
+        Matcher m1 = p1.matcher(inst);
+        if(m1.find()){
+            return true;
+        } else { }
+        return false;
+    }
+    
+    public String forBranch(String line, int curr){
+        String newVar = "";
+        String[] words = line.split("[,\\s]+");
+        for(int i=0; i<inst.size(); i++){
+            if( inst.get(i).startsWith(words[words.length-1]) ){
+                if(curr<i){
+                    newVar = String.valueOf(i-curr-1);
+                } else {
+                    newVar = String.valueOf(curr-i);
+                }
+            }
+        }
+        line = line.replaceAll(words[words.length-1], newVar);
+        return line;
     }
     
     private void updateOCTable(String line_num, String firstCol, String secondCol){
