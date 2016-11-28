@@ -15,5 +15,15 @@ public class Opcode {
 	public static int LUI 		= 0b001111;
 	
 	public static int LB 		= 0b100000;
-	
+        
+        public static int LD 		= 0b110111;
+        
+        public static int SD 		= 0b111111;
+        
+        public static int DSUBU 	= 0b101111;
+        
+        public static int XOR           = 0b100110;
+        
+        public static int SLT           = 0b101010;
+        
 }

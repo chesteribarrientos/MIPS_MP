@@ -12,7 +12,7 @@ public class LB extends MemoryInstruction implements IConverter {
 
 	@Override
 	public int getOpcode(String statement) {
-		return (Opcode.LB << 26) | super.getPartial(statement);
+            return (Opcode.LB << 26) | super.getPartial(statement);
 	}
 
 }

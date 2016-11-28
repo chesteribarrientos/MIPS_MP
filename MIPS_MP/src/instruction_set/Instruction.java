@@ -15,8 +15,15 @@ public enum Instruction {
 	
 	/** I Type**/
 	BEQ		(new BEQ(), "BEQ"),
-	SLTI	(new SLTI(), "SLTI"),
+        BEQC		(new BEQC(), "BEQC"),
+        DADDIU		(new DADDIU(), "DADDIU"),
+        DSUBU		(new DSUBU(), "DSUBU"),
+	SLTI            (new SLTI(), "SLTI"),
+        XOR		(new XOR(), "XOR"),
+        SLT		(new SLT(), "SLT"),
 	LUI		(new LUI(), "LUI"),
+	LD		(new LD(), "LD"),
+	SD		(new SD(), "SD"),
 	LB		(new LB(), "LB"),
 	LH		(new LH(), "LH"),
 	

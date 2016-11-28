@@ -18,8 +18,9 @@ public class TestOpcodeReturn {
 //		Print.as32bitHex(
 //			Instruction.NOP.getInstructionConverter().getOpcode("NOP"));
 		
-		Instruction is = InstructionUtils.getInstructionEnum("LB r1, 0001(r1)"); //to get enum
-		int opcode = is.getInstructionConverter().getOpcode("LB r1, 0001(r1)"); //to execute conversion
+		//Instruction is = InstructionUtils.getInstructionEnum("LB r1, 0001(r1)"); //to get enum
+		Instruction is = InstructionUtils.getInstructionEnum("NOP"); //to get enum
+		int opcode = is.getInstructionConverter().getOpcode("NOP"); //to execute conversion
 		Print.as32bitHex(opcode);
 	}
 }
