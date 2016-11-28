@@ -26,4 +26,7 @@ public class Opcode {
         
         public static int SLT           = 0b101010;
         
+        public static int BC	= 0b110010;
+        public static int BEQC = 0b001000;
+        
 }

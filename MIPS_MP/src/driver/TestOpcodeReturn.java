@@ -1,6 +1,7 @@
 package driver;
 
 import instruction_set.Instruction;
+import machine.Machine;
 import utils.InstructionUtils;
 import utils.Print;
 
@@ -19,8 +20,15 @@ public class TestOpcodeReturn {
 //			Instruction.NOP.getInstructionConverter().getOpcode("NOP"));
 		
 		//Instruction is = InstructionUtils.getInstructionEnum("LB r1, 0001(r1)"); //to get enum
+		//int opcode = is.getInstructionConverter().getOpcode("LB r1, 0001(r1)");
+		/*
 		Instruction is = InstructionUtils.getInstructionEnum("NOP"); //to get enum
 		int opcode = is.getInstructionConverter().getOpcode("NOP"); //to execute conversion
+		Print.as64bitHex(opcode);
+		*/
+		
+		Instruction is = InstructionUtils.getInstructionEnum("DADDIU R4, R1, 0x0F02");
+		int opcode = is.getInstructionConverter().getOpcode("DADDIU R4, R1, 0x0F02");
 		Print.as32bitHex(opcode);
 	}
 }

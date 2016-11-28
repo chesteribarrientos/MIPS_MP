@@ -1,5 +1,6 @@
 package instruction_set;
 
+import config.Opcode;
 import interfaces.IConverter;
 import interfaces.IExecutor;
 
@@ -13,12 +14,11 @@ public class BEQC implements IConverter, IExecutor {
     public int getOpcode(String statement) {
         String[] words = statement.split("[,\\s]+");
         
-        int opcode = 0b001000;
         int rs = Integer.parseInt(words[1].substring(1));
         int rt = Integer.parseInt(words[2].substring(1));
         int offset = Integer.decode(words[3]);
         
-        int finalOpcode = (opcode << 26) | (rs << 21) | (rt << 16) | offset;
+        int finalOpcode = (Opcode.BEQC << 26) | (rs << 21) | (rt << 16) | offset;
         return finalOpcode;
     }
 
