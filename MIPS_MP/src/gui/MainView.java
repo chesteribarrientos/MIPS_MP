@@ -1,5 +1,6 @@
 package gui;
 
+import instruction_set.Instruction;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -7,7 +8,6 @@ import java.awt.Event;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
@@ -32,6 +33,8 @@ import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import utils.InstructionUtils;
+import utils.Print;
 
 /**
  * @author laurencefoz
@@ -45,7 +48,8 @@ public class MainView extends JFrame {
     private File baseFile;
     private final JTable t_table;
     private final DefaultTableModel model;
-    private final String[] columnNames = {"Instruction", "OpCode (In Hex)"};
+    private final String[] columnNames = {"#", "Instruction", "OpCode"};
+    private ArrayList<String> inst = new ArrayList<>();
     
     private JMenu file;
     private JMenuItem open;
@@ -77,8 +81,10 @@ public class MainView extends JFrame {
         Object data[][] = {};
         this.model = new DefaultTableModel(data, columnNames);
         this.t_table = new JTable(model);
-        t_table.getColumnModel().getColumn(0).setPreferredWidth(15);
-        t_table.getColumnModel().getColumn(1).setPreferredWidth(150);
+        t_table.getColumnModel().getColumn(0).setPreferredWidth(20);
+        t_table.getColumnModel().getColumn(1).setPreferredWidth(260);
+        t_table.getColumnModel().getColumn(2).setPreferredWidth(112);
+        t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         jsp_1 = new JScrollPane(t_table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -188,14 +194,29 @@ public class MainView extends JFrame {
         
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             baseFile = jfc.getSelectedFile();
-            ta_log.append("File " + baseFile.getName() + " Selected");
+            ta_log.append("File " + baseFile.getName() + " Selected\n");
             try (BufferedReader reader = new BufferedReader(new FileReader(baseFile))) {
             String line = "";
+            int i = 1;
             
             while ((line = reader.readLine()) != null) {
-                updateOCTable(line);
+                Instruction is = InstructionUtils.getInstructionEnum(line); //to get enum
+		int opcode = is.getInstructionConverter().getOpcode(line); //to execute conversion
+		//Print.as32bitHex(opcode);
+                String opCode = String.format("%08X", (int) opcode);
+                if("00000000".equals(opCode) && !line.startsWith("NOP")){
+                    ta_log.append("Invalid code at line "+i+"\n");
+                } else {;
+                    inst.add(line);
+                    updateOCTable(String.valueOf(i), line, opCode);
+                }
+                i++;
             }
-
+            
+            for(int j=0; j<inst.size(); j++){
+                System.out.println("Valid Instruction #"+(j+1)+": "+inst.get(j));
+            }
+            
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -206,10 +227,15 @@ public class MainView extends JFrame {
         }
     }
     
-    private void updateOCTable(String firstCol){
-        Object[] temp = new Object[2];
-	temp[0] = firstCol;
-	temp[1] = "";
+    private void updateOCTable(String line_num, String firstCol, String secondCol){
+        Object[] temp = new Object[3];
+	temp[0] = line_num;
+	temp[1] = firstCol;
+	temp[2] = secondCol;
 	model.addRow(temp);
+    }
+    
+    private ArrayList<String> getCode(){
+        return inst;
     }
 }

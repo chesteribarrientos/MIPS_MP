@@ -9,7 +9,7 @@ package instruction_set;
 public class MemoryInstruction {
 
 	public int getPartial(String statement) {
-                System.out.println("Statement: "+statement);
+                //System.out.println("Statement: "+statement);
 		String[] words = statement.split("[(),\\s]+");
 
 		int base = Integer.parseInt(words[3].substring(1));
