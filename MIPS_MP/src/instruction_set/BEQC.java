@@ -17,7 +17,7 @@ public class BEQC implements IConverter, IExecutor {
         int rs = Integer.parseInt(words[1].substring(1));
         int rt = Integer.parseInt(words[2].substring(1));
         int offset = Integer.parseInt(words[3]);
-        
+        if (offset < 0) offset = offset & 0x0000ffff;
         int finalOpcode = (Opcode.BEQC << 26) | (rs << 21) | (rt << 16) | offset;
         return finalOpcode;
     }

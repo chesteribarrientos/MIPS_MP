@@ -316,11 +316,7 @@ public class MainView extends JFrame {
         String[] words = line.split("[,\\s]+");
         for(int i=0; i<inst.size(); i++){
             if( inst.get(i).startsWith(words[words.length-1]) ){
-                if(curr<i){
-                    newVar = String.valueOf(i-curr-1);
-                } else {
-                    newVar = String.valueOf(curr-i);
-                }
+            	newVar = String.valueOf(i-curr-1);
             }
         }
         line = line.replaceAll(words[words.length-1], newVar);
