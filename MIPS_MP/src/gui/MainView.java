@@ -71,7 +71,10 @@ public class MainView extends JFrame {
         lbl_placeHolder.setFont(new Font("Calibri", Font.PLAIN, 20));
         
         ta_log      = new JTextArea(10,30);
+        ta_log.append("WELCOME TO THE MIPS64 SIMULATOR!\n\n");
         ta_log.setEditable(false);
+        ta_log.setWrapStyleWord(true);
+        ta_log.setLineWrap(true);
         ta_inReg    = new JTextArea(15,30);
         ta_inReg.setEditable(false);
         
@@ -81,12 +84,12 @@ public class MainView extends JFrame {
         Object data[][] = {};
         this.model = new DefaultTableModel(data, columnNames);
         this.t_table = new JTable(model);
-        t_table.getColumnModel().getColumn(0).setPreferredWidth(20);
-        t_table.getColumnModel().getColumn(1).setPreferredWidth(260);
+        t_table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        t_table.getColumnModel().getColumn(1).setPreferredWidth(235);
         t_table.getColumnModel().getColumn(2).setPreferredWidth(112);
         t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
-        jsp_1 = new JScrollPane(t_table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+        jsp_1 = new JScrollPane(t_table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_2 = new JScrollPane(ta_log, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -189,7 +192,7 @@ public class MainView extends JFrame {
         for(int i=0;i<rc;i++){
             model.removeRow(0);
         }
-        model.setRowCount(0);
+        //model.setRowCount(0);
     }
     
     private void openFile() {
@@ -202,9 +205,9 @@ public class MainView extends JFrame {
         
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             resetTable();
-            System.out.println("Row Count: "+model.getRowCount());
+            //System.out.println("Row Count: "+model.getRowCount());
+            inst = new ArrayList<>();
             
-            ta_log.append("\n");
             baseFile = jfc.getSelectedFile();
             ta_log.append("File " + baseFile.getName() + " Selected\n");
             try (BufferedReader reader = new BufferedReader(new FileReader(baseFile))) {
@@ -221,7 +224,7 @@ public class MainView extends JFrame {
             }
             
             toBackEnd(inst);
-            
+            ta_log.append("\n");
             /*for(int j=0; j<inst.size(); j++){
                 System.out.println("Valid Instruction #"+(j+1)+": "+inst.get(j));
             }*/
@@ -232,11 +235,12 @@ public class MainView extends JFrame {
                 e.printStackTrace();
             }
         } else {
-            ta_log.append("Open command cancelled by user\n");
+            ta_log.append("Open command cancelled by user\n\n");
         }
     }
     
     public void toBackEnd(ArrayList<String> stuff){
+        //prevTable = stuff.size();
         for(int i=0; i<stuff.size(); i++){
             String line = stuff.get(i).replaceAll("L[1-9]\\s*:\\s*","");
             if(line.startsWith("BEQC") || line.startsWith("BC")){
@@ -247,10 +251,10 @@ public class MainView extends JFrame {
             int opcode = is.getInstructionConverter().getOpcode(line); //to execute conversion
             String opCode = String.format("%08X", (int) opcode);
             
-            if("00000000".equals(opCode) && !line.startsWith("NOP")){
+            if("00000000".equals(opCode) && !line.startsWith("NOP")) {
                 ta_log.append("Invalid code at line "+i+"\n");
             } else {
-                updateOCTable(String.valueOf(i+1), inst.get(i), opCode);
+                updateOCTable(i+1, inst.get(i), opCode);
             }
         }
     }
@@ -316,19 +320,19 @@ public class MainView extends JFrame {
         String[] words = line.split("[,\\s]+");
         for(int i=0; i<inst.size(); i++){
             if( inst.get(i).startsWith(words[words.length-1]) ){
-            	newVar = String.valueOf(i-curr-1);
+                newVar = String.valueOf(i-curr-1);
             }
         }
         line = line.replaceAll(words[words.length-1], newVar);
         return line;
     }
     
-    private void updateOCTable(String line_num, String firstCol, String secondCol){
+    private void updateOCTable(int line_num, String firstCol, String secondCol){
         Object[] temp = new Object[3];
 	temp[0] = line_num;
 	temp[1] = firstCol;
 	temp[2] = secondCol;
-	model.addRow(temp);
+        model.addRow(temp);
     }
     
     private ArrayList<String> getCode(){
