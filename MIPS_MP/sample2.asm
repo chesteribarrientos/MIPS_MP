@@ -1,3 +1,4 @@
+	.code
 BEQC R3,R1,L1
 L1:SD R5, 1000(R4)
 NOP

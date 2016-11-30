@@ -208,6 +208,7 @@ public class MainView extends JFrame {
             resetTable();
             //System.out.println("Row Count: "+model.getRowCount());
             inst = new ArrayList<>();
+            labels = new ArrayList<>();
             
             baseFile = jfc.getSelectedFile();
             ta_log.append("File " + baseFile.getName() + " Selected\n");
