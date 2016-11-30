@@ -50,6 +50,7 @@ public class MainView extends JFrame {
     private final DefaultTableModel model;
     private final String[] columnNames = {"#", "Instruction", "OpCode"};
     private ArrayList<String> inst = new ArrayList<>();
+    private ArrayList<String> labels = new ArrayList<>();
     
     private JMenu file;
     private JMenuItem open;
@@ -212,11 +213,18 @@ public class MainView extends JFrame {
             ta_log.append("File " + baseFile.getName() + " Selected\n");
             try (BufferedReader reader = new BufferedReader(new FileReader(baseFile))) {
             String line = "";
+            Boolean dotcode = false;
             int i = 1;
             
             while ((line = reader.readLine()) != null) {
-                if( isRType(line) | isIType(line) | isJType(line) ){
+                line = line.replaceAll("\t","");
+                //System.out.println(line);
+                if( (isRType(line) | isIType(line) | isJType(line)) && dotcode && containsLabel(line,i) ){
                     inst.add(line);
+                } else if(line.startsWith(".code")){
+                    dotcode = true;
+                } else if(line.equals("")){
+                    //System.out.println("Empty line bruh");
                 } else {
                     ta_log.append("Invalid code at line "+i+"\n");
                 }
@@ -227,6 +235,7 @@ public class MainView extends JFrame {
             ta_log.append("\n");
             /*for(int j=0; j<inst.size(); j++){
                 System.out.println("Valid Instruction #"+(j+1)+": "+inst.get(j));
+                System.out.println("Label #"+(j+1)+": " + labels.get(j));
             }*/
             
             } catch (FileNotFoundException e) {
@@ -259,6 +268,27 @@ public class MainView extends JFrame {
         }
     }
     
+    public boolean containsLabel(String label, int i){
+        String newLabel = label.replaceAll("L[1-9]\\s*:\\s*","");
+        if(!label.equals(newLabel)){
+            label = label.replace(newLabel,"");
+            label = label.replace(":","");
+            label = label.replaceAll("\\s","");
+            //System.out.println("Label: " + label + " with length: " + label.length());
+            if(!labels.contains(label)){
+                labels.add(label);
+                return true;
+            } else {
+                //System.out.println("not wow ;<");
+                ta_log.append("Duplicate label at line "+i+"\n");
+                return false;
+            }
+        } else {
+            labels.add("");
+            return true;
+        }
+    }
+    
     public boolean isRType(String inst){
         String temp0 = "\\s*(L[1-9]\\s*:\\s+)*";
         String temp1 = "\\s*(XOR|DSUBU|SLT)\\s+";
@@ -269,7 +299,7 @@ public class MainView extends JFrame {
                                    + temp2 + "\\s*,\\s*"
                                    + temp2 + "\\s*,\\s*"
                                    + temp2 + "\\s*$"
-                                   + "|"+temp0+temp3); //Pattern match for XOR|DSUBU|SLT|NOP
+                                   + "|" + temp0+temp3); //Pattern match for XOR|DSUBU|SLT|NOP
         Matcher m1 = p1.matcher(inst);
         if(m1.find()){
             //System.out.println("Valid RType code");
