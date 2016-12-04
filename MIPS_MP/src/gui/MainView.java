@@ -11,11 +11,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
@@ -225,15 +228,23 @@ public class MainView extends JFrame {
         
         file = new JMenu("File");
         open = new JMenuItem("Open");
+        save = new JMenuItem("Save");
         
         open.addActionListener((ActionEvent e) -> {
             openFile();
         });
         
+        save.addActionListener((ActionEvent e) -> {
+            saveFile();
+        });
+        
         open.registerKeyboardAction((ActionEvent e) -> {open.doClick();},
                 KeyStroke.getKeyStroke('O', Event.CTRL_MASK, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
+        save.registerKeyboardAction((ActionEvent e) -> {save.doClick();},
+                KeyStroke.getKeyStroke('S', Event.CTRL_MASK, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
         
         file.add(open);
+        file.add(save);
         mb.add(file);
         
         return mb;
@@ -262,7 +273,6 @@ public class MainView extends JFrame {
             
             baseFile = jfc.getSelectedFile();
             path = baseFile.getPath().replaceAll(baseFile.getName(),"");
-            System.out.println(path);
             ta_log.append("File " + baseFile.getName() + " Selected\n");
             try (BufferedReader reader = new BufferedReader(new FileReader(baseFile))) {
                 String line = "";
@@ -270,21 +280,22 @@ public class MainView extends JFrame {
                 Boolean valid = true;
                 int i = 1;
 
-                while ((line = reader.readLine()) != null && valid) {
+                while ((line = reader.readLine()) != null) {
                     ta_textEdit.append(line+"\n");
                     line = line.replaceAll("\t","");
                     if(!dotcode){
                         line = line.replaceAll("\\s","");
                     }
-                    if( (isRType(line) | isIType(line) | isJType(line)) && dotcode && !line.startsWith(";")){
+                    if(line.substring(0,1).matches("\\d")){
+                        ta_log.append("ERROR: Instruction cannot begin with a number: line "+i+"\n");
+                        valid = false;
+                    } else if( (isRType(line) | isIType(line) | isJType(line)) && valid && dotcode && !line.startsWith(";")){
                         inst.add(line);
                     } else if(line.startsWith(".code")){
                         dotcode = true;
-                        //ta_textEdit.append(line+"\n");
-                    } else if(line.startsWith(";")){ }
-                    else { 
+                    } else if(line.startsWith(";")){ 
+                    } else {
                         checkParams(line, i);
-                        //ta_log.append("ERROR: Instruction in your code not found: line "+i+"\n");
                         valid = false;
                     }
                     i++;
@@ -292,11 +303,12 @@ public class MainView extends JFrame {
                 if(!inst.isEmpty() && dotcode && valid){
                     getLabels();
                     toBackEnd();
-                } else if(!valid) { }
-                else {
+                } else if(inst.isEmpty() && !dotcode){
                     ta_log.append("ERROR: Code Segment not found\n");
                     ta_log.append("Possible Solution: Check if code has '.code' segment\n");   
-                }
+                } /*else if(!inst.isEmpty() && !valid){
+                    ta_log.append("ERROR: Invalid Code: line "+i+"\n");
+                }*/
                 ta_log.append("\n");
                 /*for(int j=0; j<inst.size(); j++){
                     System.out.println("Valid Instruction #"+(j+1)+": "+inst.get(j));
@@ -309,6 +321,33 @@ public class MainView extends JFrame {
             }
         } else {
             ta_log.append("Open command cancelled by user\n\n");
+        }
+    }
+    
+    private void saveFile(){
+        /*jfc = new JFileChooser(path);
+        FileFilter filter = new FileNameExtensionFilter("Assembly Files", "asm", "s");
+        jfc.setDialogTitle("Save Assembly File"); 
+        jfc.setAcceptAllFileFilterUsed(false);
+        jfc.addChoosableFileFilter(filter);
+        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int option = jfc.showSaveDialog(this);*/
+        String temp = ta_textEdit.getText();
+        
+        if (temp != null) {
+            String[] lines = temp.split("\n");
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter(path+baseFile.getName()))){
+                for(int i=0;i<lines.length; i++){
+                    System.out.println(lines[i]);
+                    bw.write(lines[i]+"\n");
+                }
+                //bw.close();
+                ta_log.append("File saved to "+baseFile+"\n\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            ta_log.append("Nothing to save yet.\n\n");
         }
     }
     
@@ -345,7 +384,7 @@ public class MainView extends JFrame {
         for(int i=0; i<inst.size(); i++){
             String label = inst.get(i);
             String newLabel = label.replaceAll("[a-zA-Z]\\w\\s*:\\s*","");
-            if(!label.equals(newLabel)){
+            if(!label.equals(newLabel)) {
                 label = label.replace(newLabel,"");
                 label = label.replace(":","");
                 label = label.replaceAll("\\s","");
@@ -360,8 +399,8 @@ public class MainView extends JFrame {
             if(!labels.get(i).equals("")){
                 for(int j=i+1; j<labels.size(); j++){
                     if( labels.get(i).equals(labels.get(j)) ){
-                        ta_log.append("ERROR: Duplicate Labels found in your code\n");
-                        ta_log.append("Possible Solution: Change the name of your label/s \n");
+                        ta_log.append("ERROR: Duplicate Labels found in your code: lines "+(i+1)+" and "+(j+1)+"\n");
+                        ta_log.append("Possible Solution: Change the name of your labels \n");
                         return false;
                     }
                 }
@@ -399,16 +438,11 @@ public class MainView extends JFrame {
             case "SLT"      : 
             case "DADDIU"   : 
             case "BEQC"     : 
+            case "LD"       :
+            case "SD"       : 
                 if(temp.length>4){
                     ta_log.append("Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
                 } else if(temp.length<4){
-                    ta_log.append("Too little parameters for instruction : \""+temp[0]+"\" at line "+i+"\n"); }
-                break;
-            case "LD"       :
-            case "SD"       : 
-                if(temp.length>3){
-                    ta_log.append("Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
-                } else if(temp.length<3){
                     ta_log.append("Too little parameters for instruction : \""+temp[0]+"\" at line "+i+"\n"); }
                 break;
             case "BC"       : 
@@ -451,7 +485,7 @@ public class MainView extends JFrame {
         String temp2 = "\\s*R([0-9]|[1-2][0-9]|3[0-1])";
         String temp3 = "\\s*(LD|SD)\\s+";
         String temp4 = "\\s*(BEQC)\\s+";
-        String temp5 = "\\s*L[1-9]\\s*";
+        String temp5 = "\\s*[a-zA-Z]\\w\\s*";
         Pattern p1 = Pattern.compile(temp0 +
                                      temp1
                                    + temp2 + "\\s*,\\s*"
