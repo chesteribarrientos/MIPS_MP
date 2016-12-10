@@ -3,6 +3,7 @@ package gui;
 import instruction_set.Instruction;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Font;
@@ -34,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
@@ -45,7 +47,7 @@ import utils.Print;
  */
 public class MainView extends JFrame {
     private final JPanel p_main, p_reg, p_pipeline;
-    private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_textEdit, lbl_R, lbl_placeHolder;
+    private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_textEdit, lbl_R;
     private final JTextArea ta_log, ta_inReg, ta_textEdit;
     private final JScrollPane jsp_1, jsp_2, jsp_3, jsp_4, jsp_5, jsp_6;
     private final ArrayList<JTextField> tf_register;
@@ -55,13 +57,14 @@ public class MainView extends JFrame {
     private final JTable t_table;
     private final DefaultTableModel model;
     private final String[] columnNames = {"#", "Instruction", "OpCode"};
+    //private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB", "*"};
     private ArrayList<String> inst;
     private ArrayList<String> labels;
+    private ArrayList<instPipeline> pipes;
     private String path;
     
-    private JMenu file;
-    private JMenuItem open;
-    private JMenuItem save;
+    private JMenu file, run;
+    private JMenuItem open, save, runSingle, runFull;
     //private JMenuItem exit;
     
     public MainView(){
@@ -73,6 +76,7 @@ public class MainView extends JFrame {
         labels = new ArrayList<>();
         tf_register = new ArrayList<>();
         lbl_register = new ArrayList<>();
+        pipes = new ArrayList<>();
         
         lbl_opCode      = new JLabel("Instruction OpCodes");
         lbl_error       = new JLabel("Activity and Error Log");
@@ -80,15 +84,14 @@ public class MainView extends JFrame {
         lbl_inReg       = new JLabel("Internal MIPS64 Registers");
         lbl_textEdit    = new JLabel("Text Editor");
         lbl_R           = new JLabel("Registers");
-        lbl_placeHolder = new JLabel("Pipeline Map to be inserted");
         lbl_opCode.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_error.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_pMap.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_inReg.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_textEdit.setFont(new Font("Calibri", Font.PLAIN, 14));
-        lbl_placeHolder.setFont(new Font("Calibri", Font.PLAIN, 14));
+        lbl_R.setFont(new Font("Calibri", Font.PLAIN, 14));
         
-        ta_log      = new JTextArea(10,40);
+        ta_log      = new JTextArea(10,30);
         ta_log.append("WELCOME TO THE MIPS64 SIMULATOR!\n\n");
         ta_log.setEditable(false);
         ta_log.setWrapStyleWord(true);
@@ -96,6 +99,8 @@ public class MainView extends JFrame {
         ta_inReg    = new JTextArea(10,20);
         ta_inReg.setEditable(false);
         ta_textEdit    = new JTextArea(10,20);
+        ta_textEdit.setWrapStyleWord(true);
+        ta_textEdit.setLineWrap(true);
         
         p_main          = new JPanel();
         p_main.setLayout(new GridBagLayout());
@@ -112,9 +117,9 @@ public class MainView extends JFrame {
         t_table.getColumnModel().getColumn(2).setPreferredWidth(75);
         t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
-        
         for(int i=0; i<32; i++){
             JLabel lbl_temp = new JLabel("R"+i);
+            lbl_temp.setHorizontalAlignment(JLabel.RIGHT);
             JTextField tf_temp = new JTextField(15);
             lbl_register.add(lbl_temp);
             tf_register.add(tf_temp);
@@ -124,8 +129,10 @@ public class MainView extends JFrame {
         for(int i=0; i<tf_register.size(); i++){
             cd.gridy = i;
             cd.gridx = 0;
+            cd.insets = new Insets(2,0,2,5);
             p_reg.add(lbl_register.get(i),cd);
             cd.gridx = 1;
+            cd.insets = new Insets(2,5,2,0);
             p_reg.add(tf_register.get(i),cd);
         }
         
@@ -142,10 +149,10 @@ public class MainView extends JFrame {
         jsp_6 = new JScrollPane(p_reg, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_1.setPreferredSize(new Dimension(140, 200));
-        jsp_2.setPreferredSize(new Dimension(100, 200));
+        jsp_2.setPreferredSize(new Dimension(50, 200));
         jsp_3.setPreferredSize(new Dimension(100, 200));
-        jsp_4.setPreferredSize(new Dimension(140, 250));
-        jsp_5.setPreferredSize(new Dimension(100, 250));
+        jsp_4.setPreferredSize(new Dimension(120, 250));
+        jsp_5.setPreferredSize(new Dimension(80, 250));
         jsp_6.setPreferredSize(new Dimension(100, 250));
         
         GridBagConstraints c = new GridBagConstraints();
@@ -227,8 +234,11 @@ public class MainView extends JFrame {
         JMenuBar mb = new JMenuBar();
         
         file = new JMenu("File");
+        run = new JMenu("Run");
         open = new JMenuItem("Open");
         save = new JMenuItem("Save");
+        runFull = new JMenuItem("Run (Full Cycle)");
+        runSingle = new JMenuItem("Run (Single Cycle)");
         
         open.addActionListener((ActionEvent e) -> {
             openFile();
@@ -238,6 +248,18 @@ public class MainView extends JFrame {
             saveFile();
         });
         
+        runSingle.addActionListener((ActionEvent e) -> {
+            System.out.println("Single run");
+        });
+        
+        runFull.addActionListener((ActionEvent e) -> {
+            if(inst.size() <= 0){
+                ta_log.append("No file added yet.\n");
+            } else{
+                addTable();
+            }
+        });
+        
         open.registerKeyboardAction((ActionEvent e) -> {open.doClick();},
                 KeyStroke.getKeyStroke('O', Event.CTRL_MASK, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
         save.registerKeyboardAction((ActionEvent e) -> {save.doClick();},
@@ -245,7 +267,10 @@ public class MainView extends JFrame {
         
         file.add(open);
         file.add(save);
+        run.add(runFull);
+        run.add(runSingle);
         mb.add(file);
+        mb.add(run);
         
         return mb;
     }
@@ -314,8 +339,6 @@ public class MainView extends JFrame {
                     System.out.println("Valid Instruction #"+(j+1)+": "+inst.get(j));
                     System.out.println("Label #"+(j+1)+": " + labels.get(j));
                 }*/
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -337,9 +360,9 @@ public class MainView extends JFrame {
         if (temp != null) {
             String[] lines = temp.split("\n");
             try(BufferedWriter bw = new BufferedWriter(new FileWriter(path+baseFile.getName()))){
-                for(int i=0;i<lines.length; i++){
-                    System.out.println(lines[i]);
-                    bw.write(lines[i]+"\n");
+                for (String line : lines) {
+                    System.out.println(line);
+                    bw.write(line + "\n");
                 }
                 //bw.close();
                 ta_log.append("File saved to "+baseFile+"\n\n");
@@ -349,6 +372,47 @@ public class MainView extends JFrame {
         } else {
             ta_log.append("Nothing to save yet.\n\n");
         }
+    }
+    
+    public void addTable(){
+        boolean isDone = false;
+        GridBagConstraints c = new GridBagConstraints();
+        int num = 0;
+        int check = 0;
+        
+        while(!isDone && check<20){
+            check++;
+            if(num<inst.size()){
+                instPipeline temp = new instPipeline(num);
+                c = temp.getGBC();
+                pipes.add(temp);
+                p_pipeline.add(pipes.get(num).addTable(), c);
+                p_pipeline.repaint();
+                p_pipeline.revalidate();
+                num++;
+            }
+            for (instPipeline pipe : pipes) {
+                if (!pipe.isDone()) {
+                    c = pipe.getGBC();
+                    p_pipeline.add(pipe.addTable(), c);
+                    p_pipeline.repaint();
+                    p_pipeline.revalidate();
+                }
+            }
+            isDone = allTrue();
+            //System.out.println(check);
+            //System.out.println(isDone);
+        }
+    }
+    
+    public boolean allTrue(){
+        for (instPipeline pipe : pipes) {
+            boolean value = pipe.isDone();
+            if(!value || pipes.size()!=inst.size()){
+                return false;
+            }
+        }
+        return true;
     }
     
     public void toBackEnd(){
@@ -365,7 +429,7 @@ public class MainView extends JFrame {
                 String opCode = String.format("%08X", (int) opcode);
                 
                 if("00000000".equals(opCode) && !line.startsWith("NOP")) {
-                    ta_log.append("Invalid code at line "+i+"\n");
+                    ta_log.append("Invalid instruction at line "+i+"\n");
                 } else {
                     updateOCTable(String.valueOf(i+1), inst.get(i), opCode);
                 }
@@ -381,8 +445,7 @@ public class MainView extends JFrame {
     }
     
     public void getLabels(){
-        for(int i=0; i<inst.size(); i++){
-            String label = inst.get(i);
+        for (String label : inst) {
             String newLabel = label.replaceAll("[a-zA-Z]\\w\\s*:\\s*","");
             if(!label.equals(newLabel)) {
                 label = label.replace(newLabel,"");
