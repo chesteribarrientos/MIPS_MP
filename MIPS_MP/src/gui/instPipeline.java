@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableModel;
 public class instPipeline {
     Boolean isDone;
     int instNum, cNum, cName;
-    private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB", "*"};
+    private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB"};
     
     public instPipeline(int i){
         isDone = false;
@@ -22,13 +22,12 @@ public class instPipeline {
         cName = 0;
     }
     
-    public JTable addTable(){
+    public JTable addTable(boolean cond){
         String[] cNames = {""};
-        Object seagulls[][] = {{pNames[cName]}};
+        Object seagulls[][] = {{pNames[cond ? cName : 5]}};
         DefaultTableModel model = new DefaultTableModel(seagulls, cNames){
             @Override
             public boolean isCellEditable(int row, int column) {
-               //all cells false
                return false;
             }
         };
@@ -39,12 +38,12 @@ public class instPipeline {
         table.getColumnModel().getColumn(0).setPreferredWidth(30);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setTableHeader(null);
-        cNum++;
-        cName++;
-        
-        if(cName>4){
-            setDone();
+        if(cond){
+            cNum++;
+            cName++;
         }
+        setDone();
+        
         
         return table;
     }
@@ -62,7 +61,9 @@ public class instPipeline {
     }
     
     public void setDone(){
-        isDone = true;
+        if(cName>4){
+            isDone = true;
+        }
     }
     
     public boolean isDone(){

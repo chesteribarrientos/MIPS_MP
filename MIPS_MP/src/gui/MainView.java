@@ -386,7 +386,7 @@ public class MainView extends JFrame {
                 instPipeline temp = new instPipeline(num);
                 c = temp.getGBC();
                 pipes.add(temp);
-                p_pipeline.add(pipes.get(num).addTable(), c);
+                p_pipeline.add(pipes.get(num).addTable(true), c);
                 p_pipeline.repaint();
                 p_pipeline.revalidate();
                 num++;
@@ -394,7 +394,7 @@ public class MainView extends JFrame {
             for (instPipeline pipe : pipes) {
                 if (!pipe.isDone()) {
                     c = pipe.getGBC();
-                    p_pipeline.add(pipe.addTable(), c);
+                    p_pipeline.add(pipe.addTable(true), c);
                     p_pipeline.repaint();
                     p_pipeline.revalidate();
                 }
