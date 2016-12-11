@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -11,15 +12,17 @@ import javax.swing.table.DefaultTableModel;
  * @author laurencefoz
  */
 public class instPipeline {
-    Boolean isDone;
+    boolean isDone;
     int instNum, cNum, cName;
-    private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB"};
+    ArrayList<JTable> cycles;
+    private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB", "*"};
     
     public instPipeline(int i){
         isDone = false;
         instNum = i;
         cNum = i;
         cName = 0;
+        cycles = new ArrayList<>();
     }
     
     public JTable addTable(boolean cond){
@@ -44,7 +47,7 @@ public class instPipeline {
         }
         setDone();
         
-        
+        cycles.add(table);
         return table;
     }
     
@@ -58,6 +61,10 @@ public class instPipeline {
         cc.insets = new Insets(5,0,5,0);
         
         return cc;
+    }
+    
+    public String getCycle(int i){
+        return cycles.get(i).getValueAt(0,0).toString();
     }
     
     public void setDone(){
