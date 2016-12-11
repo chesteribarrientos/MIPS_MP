@@ -77,9 +77,9 @@ public class MainView extends JFrame {
         num = 0;
         inst = new ArrayList<>();
         labels = new ArrayList<>();
+        pipes = new ArrayList<>();
         tf_register = new ArrayList<>();
         lbl_register = new ArrayList<>();
-        pipes = new ArrayList<>();
         
         lbl_opCode      = new JLabel("Instruction OpCodes");
         lbl_error       = new JLabel("Activity and Error Log");
@@ -284,10 +284,14 @@ public class MainView extends JFrame {
     
     private void clearFields(){
         ta_textEdit.setText("");
+        ta_inReg.setText("");
         int rc = model.getRowCount();
         for(int i=0;i<rc;i++){
             model.removeRow(0);
         }
+        p_pipeline.removeAll();
+        p_pipeline.repaint();
+        p_pipeline.revalidate();
     }
     
     private void openFile() {
@@ -302,6 +306,9 @@ public class MainView extends JFrame {
             clearFields();
             inst = new ArrayList<>();
             labels = new ArrayList<>();
+            pipes = new ArrayList<>();
+            num = 0;
+            System.out.println("Pipes Size: "+pipes.size());
             
             baseFile = jfc.getSelectedFile();
             path = baseFile.getPath().replaceAll(baseFile.getName(),"");
@@ -413,12 +420,14 @@ public class MainView extends JFrame {
             //System.out.println(isDone);
             //System.out.println(SoF);
         } while(!isDone);
+        //System.out.println("Pipes Size: "+pipes.size());
     }
     
     public boolean allTrue(){
         for (instPipeline pipe : pipes) {
             boolean value = pipe.isDone();
             if(!value || pipes.size()!=inst.size()){
+                //System.out.println("Pipes size not equal to Inst size");
                 return false;
             }
         }
