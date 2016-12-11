@@ -301,37 +301,37 @@ public class MainView extends JFrame {
             ta_log.append("File " + baseFile.getName() + " Selected\n");
             try (BufferedReader reader = new BufferedReader(new FileReader(baseFile))) {
                 String line = "";
-                Boolean dotcode = false;
+                //Boolean dotcode = false;
                 Boolean valid = true;
                 int i = 1;
 
                 while ((line = reader.readLine()) != null) {
                     ta_textEdit.append(line+"\n");
                     line = line.replaceAll("\t","");
-                    if(!dotcode){
+                    /*if(!dotcode){
                         line = line.replaceAll("\\s","");
-                    }
+                    }*/
                     if(line.substring(0,1).matches("\\d")){
                         ta_log.append("ERROR: Instruction cannot begin with a number: line "+i+"\n");
                         valid = false;
-                    } else if( (isRType(line) | isIType(line) | isJType(line)) && valid && dotcode && !line.startsWith(";")){
+                    } else if( (isRType(line) | isIType(line) | isJType(line)) && valid /*&& dotcode*/ && !line.startsWith(";")){
                         inst.add(line);
-                    } else if(line.startsWith(".code")){
+                    } /*else if(line.startsWith(".code")){
                         dotcode = true;
-                    } else if(line.startsWith(";")){ 
+                    }*/ else if(line.startsWith(";")){ 
                     } else {
                         checkParams(line, i);
                         valid = false;
                     }
                     i++;
                 }
-                if(!inst.isEmpty() && dotcode && valid){
+                if(!inst.isEmpty() /*&& dotcode*/ && valid){
                     getLabels();
                     toBackEnd();
-                } else if(inst.isEmpty() && !dotcode){
+                } /*else if(inst.isEmpty() && !dotcode){
                     ta_log.append("ERROR: Code Segment not found\n");
                     ta_log.append("Possible Solution: Check if code has '.code' segment\n");   
-                } /*else if(!inst.isEmpty() && !valid){
+                } else if(!inst.isEmpty() && !valid){
                     ta_log.append("ERROR: Invalid Code: line "+i+"\n");
                 }*/
                 ta_log.append("\n");
