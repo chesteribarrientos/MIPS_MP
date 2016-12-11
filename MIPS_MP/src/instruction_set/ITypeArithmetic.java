@@ -1,5 +1,9 @@
 package instruction_set;
 
+import machine.MEMWB;
+import machine.Machine;
+import utils.OpcodeUtils;
+
 /**
  * 
  * @author Chester
@@ -19,4 +23,10 @@ public class ITypeArithmetic {
 		return finalOpcode;
 	}
 
+	public void doWriteback(int opcode, Machine machine){
+		MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
+		
+		int rt = OpcodeUtils.rt(opcode);
+		machine.storeToGPR(rt, memwb.ALUOutput());
+	}
 }

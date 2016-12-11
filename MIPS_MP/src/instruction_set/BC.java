@@ -4,7 +4,7 @@ import config.Opcode;
 import interfaces.IConverter;
 import interfaces.IExecutor;
 
-public class BC implements IConverter, IExecutor {
+public class BC implements IConverter {
 	
 	@Override
 	public int getOpcode(String statement) {
@@ -15,11 +15,5 @@ public class BC implements IConverter, IExecutor {
 		
 		int finalOpcode = (Opcode.BC << 26) | offset;
 		return finalOpcode;
-	}
-
-	@Override
-	public void execute(int opcode) {
-		// TODO Auto-generated method stub
-
 	}
 }

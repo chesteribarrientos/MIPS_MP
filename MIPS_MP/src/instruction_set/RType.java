@@ -4,6 +4,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import config.Opcode;
+import machine.MEMWB;
+import machine.Machine;
+import utils.OpcodeUtils;
 
 /**
  * @author laurencefoz
@@ -24,6 +27,16 @@ public class RType {
         //}
         
         //return Opcode.NOP;
+    }
+    
+    /** @author Chester
+     * for write back of all r types
+     */
+    public void doWriteBack(int opcode, Machine machine){
+    	MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
+		
+		int rd = OpcodeUtils.rd(opcode);
+		machine.storeToGPR(rd, memwb.ALUOutput());
     }
     
     /*public boolean checkForErrors(String[] words) {

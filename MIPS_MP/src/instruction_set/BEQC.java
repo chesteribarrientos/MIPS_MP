@@ -8,7 +8,7 @@ import interfaces.IExecutor;
  * @author laurencefoz
  */
 
-public class BEQC implements IConverter, IExecutor {
+public class BEQC implements IConverter {
 
     @Override
     public int getOpcode(String statement) {
@@ -20,11 +20,6 @@ public class BEQC implements IConverter, IExecutor {
         if (offset < 0) offset = offset & 0x0000ffff;
         int finalOpcode = (Opcode.BEQC << 26) | (rs << 21) | (rt << 16) | offset;
         return finalOpcode;
-    }
-
-    @Override
-    public void execute(int opcode) {
-        // TODO Auto-generated method stub
     }
     
 }

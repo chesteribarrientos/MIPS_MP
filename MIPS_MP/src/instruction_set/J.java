@@ -1,5 +1,6 @@
 package instruction_set;
 
+import config.Opcode;
 import interfaces.IConverter;
 
 /**
@@ -11,7 +12,7 @@ public class J extends JType implements IConverter {
 
 	@Override
 	public int getOpcode(String statement) {
-		return (0b000010 << 26) | super.getPartial(statement);
+		return (Opcode.J << 26) | super.getPartial(statement);
 	}
 
 }
