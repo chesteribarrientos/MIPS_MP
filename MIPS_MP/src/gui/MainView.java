@@ -62,6 +62,7 @@ public class MainView extends JFrame {
     private ArrayList<String> labels;
     private ArrayList<instPipeline> pipes;
     private String path;
+    private Integer num;
     
     private JMenu file, run;
     private JMenuItem open, save, runSingle, runFull;
@@ -71,7 +72,9 @@ public class MainView extends JFrame {
         super("MIPS64 Simulator");
         super.setJMenuBar(setMenuBar());
         
+        //Initialize variables
         path = "";
+        num = 0;
         inst = new ArrayList<>();
         labels = new ArrayList<>();
         tf_register = new ArrayList<>();
@@ -249,14 +252,18 @@ public class MainView extends JFrame {
         });
         
         runSingle.addActionListener((ActionEvent e) -> {
-            System.out.println("Single run");
+            if(inst.size() <= 0){
+                ta_log.append("No file added yet.\n");
+            } else{
+                addTable(true);
+            }
         });
         
         runFull.addActionListener((ActionEvent e) -> {
             if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
             } else{
-                addTable();
+                addTable(false);
             }
         });
         
@@ -374,14 +381,21 @@ public class MainView extends JFrame {
         }
     }
     
-    public void addTable(){
-        boolean isDone = false;
-        GridBagConstraints c = new GridBagConstraints();
-        int num = 0;
+    public void addTable(boolean SoF){
+        boolean isDone = SoF;
+        GridBagConstraints c;
         int check = 0;
         
-        while(!isDone && check<20){
+        do{
             check++;
+            for (instPipeline pipe : pipes) {
+                if (!pipe.isDone()) {
+                    c = pipe.getGBC();
+                    p_pipeline.add(pipe.addTable(true), c);
+                    p_pipeline.repaint();
+                    p_pipeline.revalidate();
+                }
+            }
             if(num<inst.size()){
                 instPipeline temp = new instPipeline(num);
                 c = temp.getGBC();
@@ -391,18 +405,14 @@ public class MainView extends JFrame {
                 p_pipeline.revalidate();
                 num++;
             }
-            for (instPipeline pipe : pipes) {
-                if (!pipe.isDone()) {
-                    c = pipe.getGBC();
-                    p_pipeline.add(pipe.addTable(true), c);
-                    p_pipeline.repaint();
-                    p_pipeline.revalidate();
-                }
-            }
-            isDone = allTrue();
+            if(!SoF){
+                isDone = allTrue();
+                //System.out.println("Checked");
+            }            
             //System.out.println(check);
             //System.out.println(isDone);
-        }
+            //System.out.println(SoF);
+        } while(!isDone);
     }
     
     public boolean allTrue(){

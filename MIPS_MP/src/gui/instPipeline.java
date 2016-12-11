@@ -53,12 +53,13 @@ public class instPipeline {
     
     public GridBagConstraints getGBC(){
         GridBagConstraints cc = new GridBagConstraints();
-        cc.anchor = GridBagConstraints.NORTHWEST;
-        cc.weightx = 1;
-        cc.weighty = 1;
+        cc.anchor = GridBagConstraints.FIRST_LINE_START;
+        //cc.weightx = 1;
+        //cc.weighty = 1;
         cc.gridy = instNum;
         cc.gridx = cNum;
         cc.insets = new Insets(5,0,5,0);
+        cc.fill = GridBagConstraints.NORTHWEST;
         
         return cc;
     }
