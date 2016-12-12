@@ -35,12 +35,19 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import utils.InstructionUtils;
 import utils.Print;
+import utils.Stringify;
+import machine.Machine;
+import config.Config;
+import machine.EXMEM;
+import machine.IDEX;
+import machine.IFID;
+import machine.MEMWB;
+import utils.OpcodeUtils;
 
 /**
  * @author laurencefoz
@@ -62,7 +69,8 @@ public class MainView extends JFrame {
     private ArrayList<String> labels;
     private ArrayList<instPipeline> pipes;
     private String path;
-    private Integer num;
+    private Integer num, check;
+    private Machine machine;
     
     private JMenu file, run;
     private JMenuItem open, save, runSingle, runFull;
@@ -75,11 +83,13 @@ public class MainView extends JFrame {
         //Initialize variables
         path = "";
         num = 0;
+        check = 0;
         inst = new ArrayList<>();
         labels = new ArrayList<>();
         pipes = new ArrayList<>();
         tf_register = new ArrayList<>();
         lbl_register = new ArrayList<>();
+        machine = new Machine();
         
         lbl_opCode      = new JLabel("Instruction OpCodes");
         lbl_error       = new JLabel("Activity and Error Log");
@@ -123,13 +133,15 @@ public class MainView extends JFrame {
         for(int i=0; i<32; i++){
             JLabel lbl_temp = new JLabel("R"+i);
             lbl_temp.setHorizontalAlignment(JLabel.RIGHT);
-            JTextField tf_temp = new JTextField(15);
+            JTextField tf_temp = new JTextField(11);
+            tf_temp.setText( Stringify.as64bitHex(machine.loadFromGPR(i)) );
             lbl_register.add(lbl_temp);
             tf_register.add(tf_temp);
         }
         
         GridBagConstraints cd = new GridBagConstraints();
         for(int i=0; i<tf_register.size(); i++){
+            cd.anchor = GridBagConstraints.EAST;
             cd.gridy = i;
             cd.gridx = 0;
             cd.insets = new Insets(2,0,2,5);
@@ -308,6 +320,7 @@ public class MainView extends JFrame {
             labels = new ArrayList<>();
             pipes = new ArrayList<>();
             num = 0;
+            check = 0;
             System.out.println("Pipes Size: "+pipes.size());
             
             baseFile = jfc.getSelectedFile();
@@ -391,13 +404,14 @@ public class MainView extends JFrame {
     public void addTable(boolean SoF){
         boolean isDone = SoF;
         GridBagConstraints c;
-        int check = 0;
         
         do{
             check++;
+            ta_inReg.append("CYCLE #"+check+"\n\n");
             for (instPipeline pipe : pipes) {
                 if (!pipe.isDone()) {
                     c = pipe.getGBC();
+                    doCycle(pipe.getCName());
                     p_pipeline.add(pipe.addTable(true), c);
                     p_pipeline.repaint();
                     p_pipeline.revalidate();
@@ -406,6 +420,7 @@ public class MainView extends JFrame {
             if(num<inst.size()){
                 instPipeline temp = new instPipeline(num);
                 c = temp.getGBC();
+                doCycle(temp.getCName());
                 pipes.add(temp);
                 p_pipeline.add(pipes.get(num).addTable(true), c);
                 p_pipeline.repaint();
@@ -419,8 +434,15 @@ public class MainView extends JFrame {
             //System.out.println(check);
             //System.out.println(isDone);
             //System.out.println(SoF);
+            updateRegisters();
         } while(!isDone);
         //System.out.println("Pipes Size: "+pipes.size());
+    }
+    
+    public void updateRegisters(){
+        for(int i=0; i<32; i++){
+            tf_register.get(i).setText( Stringify.as64bitHex(machine.loadFromGPR(i)) );
+        }
     }
     
     public boolean allTrue(){
@@ -432,6 +454,61 @@ public class MainView extends JFrame {
             }
         }
         return true;
+    }
+    
+    public void doCycle(int i){
+        System.out.println("Entered "+i);
+        switch(i){
+            case 0: machine.doIFCycle(); 
+                IFID ifid = (IFID) machine.getPipeline().get("IF/ID");
+                long tempIR = ifid.IR();
+                long tempNPC = Integer.parseInt(Long.toString(ifid.NPC()) , 16);
+                ta_inReg.append("IF\n\n");
+                ta_inReg.append("IF/ID.IR:\t"+Stringify.as32bitHex(tempIR)+"\n");
+                ta_inReg.append("IF/ID.NPC,PC:\t"+Stringify.as64bitHex(tempNPC)+"\n");
+                ta_inReg.append("\n");
+                break;
+            case 1: machine.doIDCycle();
+                IDEX idex = (IDEX) machine.getPipeline().get("ID/EX");
+                ta_inReg.append("ID\n\n"); 
+                ta_inReg.append("ID/EX.IR:\t"+Stringify.as32bitHex(idex.IR())+"\n");
+                ta_inReg.append("ID/EX.A:\t"+Stringify.as64bitHex(idex.A())+"\n");
+                ta_inReg.append("ID/EX.B:\t"+Stringify.as64bitHex(idex.B())+"\n");
+                ta_inReg.append("ID/EX.IMM:\t"+Stringify.as64bitHex(idex.Imm())+"\n");
+                ta_inReg.append("\n");
+                break;
+            case 2: machine.doExCycle();
+                EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
+                int cond = exmem.Cond() ? 1:0;
+                ta_inReg.append("EX\n\n");
+                ta_inReg.append("EX/MEM.IR:\t"+Stringify.as32bitHex(exmem.IR())+"\n");
+                ta_inReg.append("EX/MEM.ALUOUTPUT:\t"+Stringify.as64bitHex(exmem.ALUOutput())+"\n");
+                ta_inReg.append("EX/MEM.B:\t"+Stringify.as64bitHex(exmem.B())+"\n");
+                ta_inReg.append("EX/MEM.cond:\t"+cond+"\n");
+                ta_inReg.append("\n");
+                break;
+            case 3: machine.doMemCycle();
+                MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
+                ta_inReg.append("MEM\n\n");
+                ta_inReg.append("MEM/WB.IR:\t"+Stringify.as32bitHex(memwb.IR())+"\n");
+                ta_inReg.append("MEM/WB.ALUOUTPUT:\t"+Stringify.as64bitHex(memwb.ALUOutput())+"\n");
+                ta_inReg.append("MEM/WB.LMD:\t"+Stringify.as64bitHex(memwb.LMD())+"\n");
+                //STILL NEEDS MEM[ALUOUTPUT]
+                ta_inReg.append("\n");
+                break;
+            case 4: machine.doWBCycle();
+                ta_inReg.append("WB\n\n");
+                memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
+                String temp = Long.toHexString(memwb.IR());
+                int opcode = Integer.parseInt(temp, 16) ;
+                /*long turp = Long.parseLong(temp, 16);
+                int opcode = (int) turp;*/
+		ta_inReg.append("R" + OpcodeUtils.rt(opcode) + " = ");
+                ta_inReg.append(""+Stringify.as64bitHex(machine.loadFromGPR(OpcodeUtils.rt(opcode)))+"\n");
+                ta_inReg.append("\n");
+                break;
+            default: System.out.println("STALL");
+        }
     }
     
     public void toBackEnd(){
@@ -446,6 +523,7 @@ public class MainView extends JFrame {
                 Instruction is = InstructionUtils.getInstructionEnum(line); //to get enum
                 int opcode = is.getInstructionConverter().getOpcode(line); //to execute conversion
                 String opCode = String.format("%08X", (int) opcode);
+		machine.storeWordToMemory(Config.CODE_START, opcode);
                 
                 if("00000000".equals(opCode) && !line.startsWith("NOP")) {
                     ta_log.append("Invalid instruction at line "+i+"\n");

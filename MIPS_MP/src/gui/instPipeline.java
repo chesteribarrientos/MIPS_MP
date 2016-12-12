@@ -68,6 +68,10 @@ public class instPipeline {
         return cycles.get(i).getValueAt(0,0).toString();
     }
     
+    public int getCName(){
+        return cName;
+    }
+    
     public void setDone(){
         if(cName>4){
             isDone = true;

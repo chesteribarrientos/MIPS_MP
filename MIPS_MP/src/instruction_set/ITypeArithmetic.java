@@ -28,7 +28,7 @@ public class ITypeArithmetic {
 		MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
 		
 		int rt = OpcodeUtils.rt(opcode);
-		System.out.println("mem alu: " + memwb.ALUOutput() + "rt: " + rt);
+		//System.out.println("mem alu: " + memwb.ALUOutput() + "rt: " + rt);
 		machine.storeToGPR(rt, memwb.ALUOutput());
 	}
 	

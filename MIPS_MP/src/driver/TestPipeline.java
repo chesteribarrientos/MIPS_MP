@@ -21,13 +21,14 @@ public class TestPipeline {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Machine machine = new Machine();
-		//String code = "DADDIU r1, r0, 0x8001";
+		String code = "DADDIU R5, R0, 0x0004";
 		//String code = "XOR r5, r1, r3";
 		//String code = "DSUBU r5, r1, r3";
 		//String code = "SLT r5, r1, r3";
-		String code = "LD r4, 1000(r1)"; 
+		//String code = "LD r4, 1000(r1)"; 
 		//String code = "SD r4, 1000(r1)";
 		int opcode = InstructionUtils.getInstructionEnum(code).getInstructionConverter().getOpcode(code);
+                System.out.println(opcode);
 		machine.storeWordToMemory(Config.CODE_START, opcode);
 		
 		System.out.print("Opcode fetched: ");
@@ -36,10 +37,10 @@ public class TestPipeline {
 		// test R-Type
 		// note: dsubu is not unsigned
 		//machine.storeToGPR(1, 1);
-		machine.storeToGPR(3, 2);
+		//machine.storeToGPR(3, 2);
 		
 		// test LD
-		machine.storeDoubleWordToMemory(0x1004, 5); // need to check out of bounds, invalid address
+		//machine.storeDoubleWordToMemory(0x1004, 5); // need to check out of bounds, invalid address
 		//machine.storeToGPR(4, 70);
 		
 		machine.doIFCycle();
