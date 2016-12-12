@@ -221,10 +221,10 @@ public class MainView extends JFrame implements DocumentListener{
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_6 = new JScrollPane(p_mem, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        jsp_1.setPreferredSize(new Dimension(100, 200));
+        jsp_1.setPreferredSize(new Dimension(140, 200));
         jsp_2.setPreferredSize(new Dimension(100, 200));
         jsp_3.setPreferredSize(new Dimension(100, 200));
-        jsp_4.setPreferredSize(new Dimension(100, 200));
+        jsp_4.setPreferredSize(new Dimension(140, 200));
         jsp_5.setPreferredSize(new Dimension(100, 200));
         jsp_6.setPreferredSize(new Dimension(100, 200));
         
@@ -327,31 +327,18 @@ public class MainView extends JFrame implements DocumentListener{
             } else {
                 addTable(true);
             }*/
-            hlc.runCycle();
-            HashMap<String,Pipeline> pipeline = machine.getPipeline();
-            IFID ifid = (IFID) pipeline.get("IF/ID");
-            IDEX idex = (IDEX) pipeline.get("ID/EX");
-            EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
-            MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
-            ta_log.append("IF\n\n");
-            ta_log.append(ifid.toString()+"\n");
-            ta_log.append("ID\n\n");
-            ta_log.append(idex.toString()+"\n");
-            ta_log.append("EX\n\n");
-            ta_log.append(exmem.toString()+"\n");
-            ta_log.append("MEM\n\n");
-            ta_log.append(memwb.toString()+"\n");
-            ta_log.append("--------------------------\n");
+            doCycle(true);
         });
         
         runFull.addActionListener((ActionEvent e) -> {
-            if(inst.size() <= 0){
+            /*if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
             } else if(!checkIfValid()){
                 ta_log.append("One of your textfields is too short.\n");
             } else {
                 addTable(false);
-            }
+            }*/
+            doCycle(false);
         });
         
         open.registerKeyboardAction((ActionEvent e) -> {open.doClick();},
@@ -431,8 +418,11 @@ public class MainView extends JFrame implements DocumentListener{
             inst = new ArrayList<>();
             labels = new ArrayList<>();
             pipes = new ArrayList<>();
+            opCodes = new ArrayList<>();
             num = 0;
             check = 0;
+            machine = new Machine();
+            hlc = new HighLevelController(machine);
             System.out.println("Pipes Size: "+pipes.size());
             
             baseFile = jfc.getSelectedFile();
@@ -487,7 +477,7 @@ public class MainView extends JFrame implements DocumentListener{
         }
     }
     
-    public void addTable(boolean SoF){
+    /*public void addTable(boolean SoF){
         boolean isDone = SoF;
         GridBagConstraints c;
         
@@ -523,7 +513,7 @@ public class MainView extends JFrame implements DocumentListener{
             updateRegisters();
         } while(!isDone);
         //System.out.println("Pipes Size: "+pipes.size());
-    }
+    }*/
     
     public void updateRegisters(){
         for(int i=0; i<32; i++){
@@ -542,36 +532,43 @@ public class MainView extends JFrame implements DocumentListener{
         return true;
     }
     
-    public void doCycle(int i){
-        System.out.println("Entered "+i);
-        switch(i){
+    public void doCycle(boolean soft){
+        //System.out.println("Entered "+i);
+        
+        do{
+            if(!hlc.getDone()){
+                ta_inReg.append("Cycle #"+(check+1)+"\n");
+                hlc.runCycle();
+                HashMap<String,Pipeline> pipeline = machine.getPipeline();
+                IFID ifid = (IFID) pipeline.get("IF/ID");
+                IDEX idex = (IDEX) pipeline.get("ID/EX");
+                EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
+                MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
+                ta_inReg.append("IF\n\n");
+                ta_inReg.append(ifid.toString()+"\n");
+                ta_inReg.append("ID\n\n");
+                ta_inReg.append(idex.toString()+"\n");
+                ta_inReg.append("EX\n\n");
+                ta_inReg.append(exmem.toString()+"\n");
+                ta_inReg.append("MEM\n\n");
+                ta_inReg.append(memwb.toString()+"\n");
+                ta_inReg.append("--------------------------\n");
+                check++;
+            } else {
+                soft = true;
+            }
+        }while(!soft);
+        
+        
+        /*switch(i){
             case 0: machine.doIFCycle(); 
                 IFID ifid = (IFID) machine.getPipeline().get("IF/ID");
-                long tempIR = ifid.IR();
-                long tempNPC = Integer.parseInt(Long.toString(ifid.NPC()) , 16);
-                ta_inReg.append("IF\n\n");
-                ta_inReg.append("IF/ID.IR:\t"+Stringify.as32bitHex(tempIR)+"\n");
-                ta_inReg.append("IF/ID.NPC,PC:\t"+Stringify.as64bitHex(tempNPC)+"\n");
-                ta_inReg.append("\n");
                 break;
             case 1: machine.doIDCycle();
                 IDEX idex = (IDEX) machine.getPipeline().get("ID/EX");
-                ta_inReg.append("ID\n\n"); 
-                ta_inReg.append("ID/EX.IR:\t"+Stringify.as32bitHex(idex.IR())+"\n");
-                ta_inReg.append("ID/EX.A:\t"+Stringify.as64bitHex(idex.A())+"\n");
-                ta_inReg.append("ID/EX.B:\t"+Stringify.as64bitHex(idex.B())+"\n");
-                ta_inReg.append("ID/EX.IMM:\t"+Stringify.as64bitHex(idex.Imm())+"\n");
-                ta_inReg.append("\n");
                 break;
             case 2: machine.doExCycle();
                 EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
-                int cond = exmem.Cond() ? 1:0;
-                ta_inReg.append("EX\n\n");
-                ta_inReg.append("EX/MEM.IR:\t"+Stringify.as32bitHex(exmem.IR())+"\n");
-                ta_inReg.append("EX/MEM.ALUOUTPUT:\t"+Stringify.as64bitHex(exmem.ALUOutput())+"\n");
-                ta_inReg.append("EX/MEM.B:\t"+Stringify.as64bitHex(exmem.B())+"\n");
-                ta_inReg.append("EX/MEM.cond:\t"+cond+"\n");
-                ta_inReg.append("\n");
                 break;
             case 3: machine.doMemCycle();
                 MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
@@ -588,13 +585,13 @@ public class MainView extends JFrame implements DocumentListener{
                 String temp = Long.toHexString(memwb.IR());
                 int opcode = Integer.parseInt(temp, 16) ;
                 /*long turp = Long.parseLong(temp, 16);
-                int opcode = (int) turp;*/
+                int opcode = (int) turp;
 		ta_inReg.append("R" + OpcodeUtils.rt(opcode) + " = ");
                 ta_inReg.append(""+Stringify.as64bitHex(machine.loadFromGPR(OpcodeUtils.rt(opcode)))+"\n");
                 ta_inReg.append("\n");
                 break;
             default: System.out.println("STALL");
-        }
+        }*/
     }
     
     public void toBackEnd(){

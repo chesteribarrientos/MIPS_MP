@@ -36,7 +36,7 @@ public class EXMEM extends Pipeline{
 	public String toString(){
 		return "EX.IR: " + Stringify.as32bitHex(instructionRegister) 
 			+ "\nALU: " + Stringify.as64bitHex(ALUOutput) 
-			+ "\nCond: " + cond + "\nB: " + Stringify.as64bitHex(b);
+			+ "\nCond: " + (cond  ? 1:0) + "\nB: " + Stringify.as64bitHex(b);
 	}
 	
 }

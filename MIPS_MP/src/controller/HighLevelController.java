@@ -24,6 +24,7 @@ public class HighLevelController {
 	private List<Integer> code;
 	private int lastFinishedIR;
 	private CycleFlags cycleFlags; 
+        private boolean isDone;
 	//private
 	//private IDEX idex;
 	//private 
@@ -33,6 +34,7 @@ public class HighLevelController {
 		EoFCode = Config.CODE_START;
 		cycleFlags = new CycleFlags(); //set of flags for each cycle
 		cycleFlags.IFactive(true); //remove later
+                isDone = false;
 	}
 	
 	
@@ -52,7 +54,15 @@ public class HighLevelController {
 			runCycle();
 		}
 	}
-	
+        
+	private void setDone(){
+            isDone = true;
+        }
+        
+        public boolean getDone(){
+            return isDone;
+        }
+        
 	private boolean stalled = false;
 	public boolean isStalled(){
 		return stalled;
@@ -66,6 +76,10 @@ public class HighLevelController {
 		System.out.println("Last IR Wb: " + Stringify.as32bitHex(lastFinishedIR) + " dependencyIR: " + Stringify.as32bitHex(dependencyIR));
 		//System.out.println("Stalled: " + stalled);
 		
+                if(machine.getPC() == EoFCode){
+                    setDone();
+                }
+                
 		if(cycleFlags.WBisActive()){
 			machine.doWBCycle();
 			MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
