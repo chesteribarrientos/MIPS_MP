@@ -53,7 +53,11 @@ public class HighLevelController {
 		}
 	}
 	
-	boolean stalled = false;
+	private boolean stalled = false;
+	public boolean isStalled(){
+		return stalled;
+	}
+	
 	boolean dependencyNotYetChecked = true;
 	int dependencyIR = 0;
 	
