@@ -3,6 +3,8 @@
  */
 package machine;
 
+import utils.Stringify;
+
 /**
  * @author Chester
  *
@@ -23,5 +25,9 @@ public class MEMWB extends Pipeline{
 	}
 	public void setALUOutput(long aLUOutput) {
 		ALUOutput = aLUOutput;
+	}
+	public String toString(){
+		return "MEM.IR: " + Stringify.as32bitHex(instructionRegister) 
+			+ "\nLMD: " + Stringify.as64bitHex(LMD) + "\nALU: " + Stringify.as64bitHex(ALUOutput);
 	}
 }

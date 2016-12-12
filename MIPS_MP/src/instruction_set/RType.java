@@ -1,18 +1,21 @@
 package instruction_set;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import config.Opcode;
+import interfaces.IDependencyCheck;
 import machine.EXMEM;
 import machine.MEMWB;
 import machine.Machine;
+import utils.InstructionUtils;
 import utils.OpcodeUtils;
 
 /**
  * @author laurencefoz
  */
-public class RType {
+public class RType implements IDependencyCheck{
     public int getRegisterOps(String statement) {
         String[] words = statement.split("[,\\s]+");
         
@@ -65,4 +68,50 @@ public class RType {
     	}
     	return true;
     }*/
+
+	@Override
+	public boolean hasWriteBack() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean hasMemoryStore() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean HasDependency(int opcode, List<Integer> code) {
+		int index = code.indexOf(opcode);
+    	
+    	int rs = OpcodeUtils.rs(opcode);
+		int rt = OpcodeUtils.rt(opcode);
+		
+		int i = index - 1;
+		if(i<0) i = 0;
+		int end = index - 4;
+		if(end < 0) end = 0;
+		
+		while(i >= end){
+			int currOpcode = code.get(i);
+			
+			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasWriteBack()){
+				if(OpcodeUtils.isRType(currOpcode)){
+					int rd = OpcodeUtils.rd(currOpcode);
+					if(rs == rd || rt == rd){
+						return true;
+					}
+				}
+				else{
+					int currRt = OpcodeUtils.rt(currOpcode);
+					if(rs == currRt || rt == currRt){
+						return true;
+					}
+				}
+			}
+			i--;
+		}
+		return false;
+	}
 }

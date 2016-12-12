@@ -9,7 +9,7 @@ package machine;
  */
 public class Pipeline {
 
-	private int instructionRegister;
+	protected int instructionRegister;
 	public Pipeline(){
 		
 	}

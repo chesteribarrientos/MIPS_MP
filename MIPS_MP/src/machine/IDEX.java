@@ -3,6 +3,8 @@
  */
 package machine;
 
+import utils.Stringify;
+
 /**
  * @author Chester
  *
@@ -31,5 +33,10 @@ public class IDEX extends Pipeline{
 	}
 	public void setImm(short imm) { //sign extended
 		this.imm = imm;
+	}
+	public String toString(){
+		return "ID.IR: " + Stringify.as32bitHex(instructionRegister) 
+			+ "\nA: " + Stringify.as64bitHex(a) + "\nB: " + Stringify.as64bitHex(b) 
+			+ "\nImm: " + Stringify.as64bitHex(imm);
 	}
 }

@@ -3,6 +3,8 @@
  */
 package machine;
 
+import utils.Stringify;
+
 /**
  * @author Chester
  *
@@ -31,6 +33,10 @@ public class EXMEM extends Pipeline{
 	public void setB(long b) {
 		this.b = b;
 	}
-	
+	public String toString(){
+		return "EX.IR: " + Stringify.as32bitHex(instructionRegister) 
+			+ "\nALU: " + Stringify.as64bitHex(ALUOutput) 
+			+ "\nCond: " + cond + "\nB: " + Stringify.as64bitHex(b);
+	}
 	
 }
