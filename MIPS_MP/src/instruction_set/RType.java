@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import config.Opcode;
+import machine.EXMEM;
 import machine.MEMWB;
 import machine.Machine;
 import utils.OpcodeUtils;
@@ -37,6 +38,17 @@ public class RType {
 		
 		int rd = OpcodeUtils.rd(opcode);
 		machine.storeToGPR(rd, memwb.ALUOutput());
+    }
+    /**
+     * memory cycle for r type ALU instructions
+     * warning: use only for ALU Instruction
+     */
+    public void doMemoryCycle(int opcode, Machine machine){
+
+		EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
+		MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
+		
+		memwb.setALUOutput(exmem.ALUOutput());
     }
     
     /*public boolean checkForErrors(String[] words) {

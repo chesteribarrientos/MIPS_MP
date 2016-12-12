@@ -6,6 +6,7 @@ import config.Config;
 import interfaces.IExecutor;
 import utils.InstructionUtils;
 import utils.OpcodeUtils;
+import utils.Print;
 
 /**
  * 
@@ -27,6 +28,7 @@ public class Machine {
 	}
 
 	private void initPipeline(){
+		pipeline = new HashMap<String, Pipeline>();
 		pipeline.put("IF/ID", new IFID());
 		pipeline.put("ID/EX", new IDEX());
 		pipeline.put("EX/MEM", new EXMEM());
@@ -125,9 +127,11 @@ public class Machine {
 	 **/
 	public void doIFCycle(){
 		IFID ifid = (IFID) pipeline.get("IF/ID");
-		
-		//check branch
 		int old = ifid.IR();
+		
+		int opcode = loadWordFromMemory((int)PC); //fetch
+		ifid.setIR(opcode);
+		//check branch
 		if(OpcodeUtils.isBranch(old) && OpcodeUtils.opOutput(old)){
 			PC = ifid.NPC() + OpcodeUtils.imm(old) << 2;
 		}
@@ -135,9 +139,6 @@ public class Machine {
 			PC += 4;
 		}
 		ifid.setNPC(PC);
-		
-		int opcode = loadWordFromMemory((int)PC); //fetch
-		ifid.setIR(opcode);
 	}
 	
 	public void doIDCycle(){
@@ -153,7 +154,7 @@ public class Machine {
 	public void doExCycle(){
 		IDEX idex = (IDEX) pipeline.get("ID/EX");
 		EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
-		
+
 		IExecutor executor = (IExecutor) InstructionUtils.getInstructionEnum(idex.IR()).getInstructionConverter();
 		executor.execute(idex.IR(), this);
 		
@@ -173,9 +174,8 @@ public class Machine {
 		//nope still not using switch case here, doing the enum way
 		
 		MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
-		
 		IExecutor executor = (IExecutor) InstructionUtils.getInstructionEnum(memwb.IR()).getInstructionConverter();
-		executor.execute_memory(memwb.IR(), this);
+		executor.execute_writeback(memwb.IR(), this);
 		
 	}
 

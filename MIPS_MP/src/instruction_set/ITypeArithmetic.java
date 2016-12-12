@@ -1,5 +1,6 @@
 package instruction_set;
 
+import machine.EXMEM;
 import machine.MEMWB;
 import machine.Machine;
 import utils.OpcodeUtils;
@@ -27,6 +28,19 @@ public class ITypeArithmetic {
 		MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
 		
 		int rt = OpcodeUtils.rt(opcode);
+		//System.out.println("mem alu: " + memwb.ALUOutput() + "rt: " + rt);
 		machine.storeToGPR(rt, memwb.ALUOutput());
 	}
+	
+	/**
+     * memory cycle for i type ALU instructions
+     * warning: use only for ALU Instruction
+     */
+    public void doMemoryCycle(int opcode, Machine machine){
+
+		EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
+		MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
+		
+		memwb.setALUOutput(exmem.ALUOutput());
+    }
 }
