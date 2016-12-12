@@ -59,12 +59,12 @@ import utils.OpcodeUtils;
  * @author laurencefoz
  */
 public class MainView extends JFrame implements DocumentListener{
-    private final JPanel p_main, p_reg, p_pipeline;
-    private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_R;
-    private final JTextArea ta_log, ta_inReg;
-    private final JScrollPane jsp_1, jsp_2, jsp_3, jsp_4, jsp_5;
-    private final ArrayList<JTextField> tf_register;
-    private final ArrayList<JLabel> lbl_register;
+    private final JPanel p_main, p_reg, p_pipeline, p_mem;
+    private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_R, lbl_memory;
+    private final JTextArea ta_log, ta_inReg, ta_test;
+    private final JScrollPane jsp_1, jsp_2, jsp_3, jsp_4, jsp_5, jsp_6;
+    private final ArrayList<JTextField> tf_register, tf_mem;
+    private final ArrayList<JLabel> lbl_register, lbl_mem;
     private JFileChooser jfc;
     private File baseFile;
     private final JTable t_table;
@@ -94,7 +94,9 @@ public class MainView extends JFrame implements DocumentListener{
         labels = new ArrayList<>();
         pipes = new ArrayList<>();
         tf_register = new ArrayList<>();
+        tf_mem = new ArrayList<>();
         lbl_register = new ArrayList<>();
+        lbl_mem = new ArrayList<>();
         machine = new Machine();
         
         lbl_opCode      = new JLabel("Instruction OpCodes");
@@ -102,11 +104,13 @@ public class MainView extends JFrame implements DocumentListener{
         lbl_pMap        = new JLabel("Pipeline Map");
         lbl_inReg       = new JLabel("Internal MIPS64 Registers");
         lbl_R           = new JLabel("Registers");
+        lbl_memory      = new JLabel("Memory");
         lbl_opCode.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_error.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_pMap.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_inReg.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_R.setFont(new Font("Calibri", Font.PLAIN, 14));
+        lbl_memory.setFont(new Font("Calibri", Font.PLAIN, 14));
         
         ta_log      = new JTextArea(10,30);
         ta_log.append("WELCOME TO THE MIPS64 SIMULATOR!\n\n");
@@ -115,6 +119,8 @@ public class MainView extends JFrame implements DocumentListener{
         ta_log.setLineWrap(true);
         ta_inReg    = new JTextArea(10,20);
         ta_inReg.setEditable(false);
+        ta_test    = new JTextArea(10,30);
+        ta_test.setEditable(false);
         
         p_main          = new JPanel();
         p_main.setLayout(new GridBagLayout());
@@ -122,6 +128,8 @@ public class MainView extends JFrame implements DocumentListener{
         p_reg.setLayout(new GridBagLayout());
         p_pipeline      = new JPanel();
         p_pipeline.setLayout(new GridBagLayout());
+        p_mem           = new JPanel();
+        p_mem.setLayout(new GridBagLayout());
         
         Object data[][] = {};
         this.model = new DefaultTableModel(data, columnNames);
@@ -130,6 +138,36 @@ public class MainView extends JFrame implements DocumentListener{
         t_table.getColumnModel().getColumn(1).setPreferredWidth(175);
         t_table.getColumnModel().getColumn(2).setPreferredWidth(75);
         t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        
+        int start = 12288;
+        for(int i=0; i<2048; i++){
+            //System.out.println(Integer.toHexString(start).toUpperCase());
+            JLabel lbl_temp = new JLabel(Integer.toHexString(start).toUpperCase());
+            JTextField tf_temp = new JTextField(11);
+            /*tf_temp.addKeyListener(new KeyAdapter(){
+                public void keyTyped(KeyEvent e) {
+                    char c = e.getKeyChar();
+                    if ( ((c < '0') || (c > '9')) && ((c < 'A') || (c > 'F')) && tf_temp.getText().length() <= 16 ) {
+                        e.consume();  // ignore event
+                    }
+                }
+            });*/
+            lbl_mem.add(lbl_temp);
+            tf_mem.add(tf_temp);
+            start += 4;
+        }
+        
+        GridBagConstraints cd = new GridBagConstraints();
+        for(int i=0; i<tf_mem.size(); i++){
+            cd.anchor = GridBagConstraints.EAST;
+            cd.gridy = i;
+            cd.gridx = 0;
+            cd.insets = new Insets(2,0,2,5);
+            p_mem.add(lbl_mem.get(i),cd);
+            cd.gridx = 1;
+            cd.insets = new Insets(2,5,2,0);
+            p_mem.add(tf_mem.get(i),cd);
+        }
         
         for(int i=0; i<32; i++){
             String temp = "R"+i;
@@ -153,7 +191,6 @@ public class MainView extends JFrame implements DocumentListener{
         
         tf_register.get(0).setEditable(false);
         
-        GridBagConstraints cd = new GridBagConstraints();
         for(int i=0; i<tf_register.size(); i++){
             cd.anchor = GridBagConstraints.EAST;
             cd.gridy = i;
@@ -175,12 +212,14 @@ public class MainView extends JFrame implements DocumentListener{
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_5 = new JScrollPane(ta_inReg, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        jsp_1.setPreferredSize(new Dimension(140, 200));
+        jsp_6 = new JScrollPane(p_mem, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        jsp_1.setPreferredSize(new Dimension(100, 200));
         jsp_2.setPreferredSize(new Dimension(100, 200));
-        jsp_3.setPreferredSize(new Dimension(100, 486));
-        jsp_4.setPreferredSize(new Dimension(120, 250));
-        jsp_5.setPreferredSize(new Dimension(100, 250));
-        //jsp_6.setPreferredSize(new Dimension(100, 250));
+        jsp_3.setPreferredSize(new Dimension(100, 200));
+        jsp_4.setPreferredSize(new Dimension(100, 200));
+        jsp_5.setPreferredSize(new Dimension(100, 200));
+        jsp_6.setPreferredSize(new Dimension(100, 200));
         
         GridBagConstraints c = new GridBagConstraints();
         
@@ -203,7 +242,7 @@ public class MainView extends JFrame implements DocumentListener{
         c = new GridBagConstraints();
         c.gridy = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
-	c.weightx = 0.5;
+	c.weightx = 0.0;
         
 	c.insets = new Insets(10,10,5,10);
         c.gridx = 0;
@@ -213,7 +252,6 @@ public class MainView extends JFrame implements DocumentListener{
         this.p_main.add(jsp_2, c);
         
         c.gridx = 2;
-        c.gridheight = 3;
         this.p_main.add(jsp_3, c);
         
         //Third Line
@@ -229,8 +267,8 @@ public class MainView extends JFrame implements DocumentListener{
         c.gridx = 1;
         this.p_main.add(lbl_inReg, c);
         
-        //c.gridx = 2;
-        //this.p_main.add(lbl_R, c);
+        c.gridx = 2;
+        this.p_main.add(lbl_memory, c);
         
         //Fourth Line
         c = new GridBagConstraints();
@@ -244,6 +282,9 @@ public class MainView extends JFrame implements DocumentListener{
         
         c.gridx = 1;
         this.p_main.add(jsp_5, c);
+        
+        c.gridx = 2;
+        this.p_main.add(jsp_6, c);
         
         //c.gridx = 2;
         //this.p_main.add(jsp_6, c);
@@ -314,12 +355,12 @@ public class MainView extends JFrame implements DocumentListener{
     
     @Override
     public void insertUpdate(DocumentEvent e) {
-        System.out.println("inserted");
+        //System.out.println("inserted");
         updateLog(e);
     }
     
     public void removeUpdate(DocumentEvent e) {
-        System.out.println("removed");
+        //System.out.println("removed");
         updateLog(e);
     }
     
@@ -330,7 +371,7 @@ public class MainView extends JFrame implements DocumentListener{
     public void updateLog(DocumentEvent e) {
         Document doc = (Document)e.getDocument();
         int len = doc.getLength();
-        System.out.println(len);
+        //System.out.println(len);
         if( 16 == len ){
             System.out.println("inserted\n");
             for(int i=0; i<tf_register.size(); i++){
