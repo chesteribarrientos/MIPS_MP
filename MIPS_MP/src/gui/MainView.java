@@ -43,6 +43,12 @@ import utils.Print;
 import utils.Stringify;
 import machine.Machine;
 import config.Config;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import machine.EXMEM;
 import machine.IDEX;
 import machine.IFID;
@@ -52,7 +58,7 @@ import utils.OpcodeUtils;
 /**
  * @author laurencefoz
  */
-public class MainView extends JFrame {
+public class MainView extends JFrame implements DocumentListener{
     private final JPanel p_main, p_reg, p_pipeline;
     private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_R;
     private final JTextArea ta_log, ta_inReg;
@@ -120,19 +126,32 @@ public class MainView extends JFrame {
         Object data[][] = {};
         this.model = new DefaultTableModel(data, columnNames);
         this.t_table = new JTable(model);
-        t_table.getColumnModel().getColumn(0).setPreferredWidth(20);
+        t_table.getColumnModel().getColumn(0).setPreferredWidth(21);
         t_table.getColumnModel().getColumn(1).setPreferredWidth(175);
         t_table.getColumnModel().getColumn(2).setPreferredWidth(75);
         t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         for(int i=0; i<32; i++){
-            JLabel lbl_temp = new JLabel("R"+i);
+            String temp = "R"+i;
+            JLabel lbl_temp = new JLabel(temp);
             lbl_temp.setHorizontalAlignment(JLabel.RIGHT);
             JTextField tf_temp = new JTextField(11);
             tf_temp.setText( Stringify.as64bitHex(machine.loadFromGPR(i)) );
+            tf_temp.addKeyListener(new KeyAdapter(){
+                public void keyTyped(KeyEvent e) {
+                    char c = e.getKeyChar();
+                    if ( ((c < '0') || (c > '9')) && ((c < 'A') || (c > 'F')) ) {
+                        e.consume();  // ignore event
+                    }
+                }
+            });
+            tf_temp.getDocument().addDocumentListener(this);
+            tf_temp.setActionCommand(temp);
             lbl_register.add(lbl_temp);
             tf_register.add(tf_temp);
         }
+        
+        tf_register.get(0).setEditable(false);
         
         GridBagConstraints cd = new GridBagConstraints();
         for(int i=0; i<tf_register.size(); i++){
@@ -158,7 +177,7 @@ public class MainView extends JFrame {
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_1.setPreferredSize(new Dimension(140, 200));
         jsp_2.setPreferredSize(new Dimension(100, 200));
-        jsp_3.setPreferredSize(new Dimension(100, 485));
+        jsp_3.setPreferredSize(new Dimension(100, 486));
         jsp_4.setPreferredSize(new Dimension(120, 250));
         jsp_5.setPreferredSize(new Dimension(100, 250));
         //jsp_6.setPreferredSize(new Dimension(100, 250));
@@ -278,6 +297,38 @@ public class MainView extends JFrame {
         mb.add(run);
         
         return mb;
+    }
+    
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        System.out.println("inserted");
+        updateLog(e);
+    }
+    
+    public void removeUpdate(DocumentEvent e) {
+        System.out.println("removed");
+        updateLog(e);
+    }
+    
+    public void changedUpdate(DocumentEvent e) {
+        System.out.println("changed");
+    }
+    
+    public void updateLog(DocumentEvent e) {
+        Document doc = (Document)e.getDocument();
+        int len = doc.getLength();
+        System.out.println(len);
+        if( 16 == len ){
+            System.out.println("inserted\n");
+            for(int i=0; i<tf_register.size(); i++){
+                long temp = Long.parseLong(tf_register.get(i).getText(),16);
+                machine.storeToGPR(i, temp);
+            }
+            /*for(int i=0; i<tf_register.size(); i++){
+                long temp = machine.loadFromGPR(i);
+                System.out.println("R"+i+": "+Stringify.as64bitHex(temp));
+            }*/
+        }
     }
     
     private void clearFields(){
