@@ -54,6 +54,10 @@ import machine.IDEX;
 import machine.IFID;
 import machine.MEMWB;
 import utils.OpcodeUtils;
+import controller.HighLevelController;
+import controller.CycleFlags;
+import java.util.HashMap;
+import machine.Pipeline;
 
 /**
  * @author laurencefoz
@@ -71,12 +75,13 @@ public class MainView extends JFrame implements DocumentListener{
     private final DefaultTableModel model;
     private final String[] columnNames = {"#", "Instruction", "OpCode"};
     //private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB", "*"};
-    private ArrayList<String> inst;
-    private ArrayList<String> labels;
+    private ArrayList<String> inst, labels;
+    private List<Integer> opCodes;
     private ArrayList<instPipeline> pipes;
     private String path;
     private Integer num, check;
     private Machine machine;
+    private HighLevelController hlc;
     
     private JMenu file, run;
     private JMenuItem open, runSingle, runFull;
@@ -92,12 +97,14 @@ public class MainView extends JFrame implements DocumentListener{
         check = 0;
         inst = new ArrayList<>();
         labels = new ArrayList<>();
+        opCodes = new ArrayList<>();
         pipes = new ArrayList<>();
         tf_register = new ArrayList<>();
         tf_mem = new ArrayList<>();
         lbl_register = new ArrayList<>();
         lbl_mem = new ArrayList<>();
         machine = new Machine();
+        hlc = new HighLevelController(machine);
         
         lbl_opCode      = new JLabel("Instruction OpCodes");
         lbl_error       = new JLabel("Activity and Error Log");
@@ -313,13 +320,28 @@ public class MainView extends JFrame implements DocumentListener{
         });
         
         runSingle.addActionListener((ActionEvent e) -> {
-            if(inst.size() <= 0){
+            /*if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
             } else if(!checkIfValid()) {
                 ta_log.append("One of your textfields is too short.\n");
             } else {
                 addTable(true);
-            }
+            }*/
+            hlc.runCycle();
+            HashMap<String,Pipeline> pipeline = machine.getPipeline();
+            IFID ifid = (IFID) pipeline.get("IF/ID");
+            IDEX idex = (IDEX) pipeline.get("ID/EX");
+            EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
+            MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
+            ta_log.append("IF\n\n");
+            ta_log.append(ifid.toString()+"\n");
+            ta_log.append("ID\n\n");
+            ta_log.append(idex.toString()+"\n");
+            ta_log.append("EX\n\n");
+            ta_log.append(exmem.toString()+"\n");
+            ta_log.append("MEM\n\n");
+            ta_log.append(memwb.toString()+"\n");
+            ta_log.append("--------------------------\n");
         });
         
         runFull.addActionListener((ActionEvent e) -> {
@@ -444,6 +466,8 @@ public class MainView extends JFrame implements DocumentListener{
                 if(!inst.isEmpty() /*&& dotcode*/ && valid){
                     getLabels();
                     toBackEnd();
+                    List<Integer> tempo = opCodes;
+                    hlc.loadCodeIntoMemory(tempo);
                 } /*else if(inst.isEmpty() && !dotcode){
                     ta_log.append("ERROR: Code Segment not found\n");
                     ta_log.append("Possible Solution: Check if code has '.code' segment\n");   
@@ -584,12 +608,13 @@ public class MainView extends JFrame implements DocumentListener{
             if(!line.equals("")){
                 Instruction is = InstructionUtils.getInstructionEnum(line); //to get enum
                 int opcode = is.getInstructionConverter().getOpcode(line); //to execute conversion
-                String opCode = String.format("%08X", (int) opcode);
-		machine.storeWordToMemory(Config.CODE_START, opcode);
+                String opCode = Stringify.as32bitHex((long) opcode);
+		//machine.storeWordToMemory(Config.CODE_START, opcode);
                 
                 if("00000000".equals(opCode) && !line.startsWith("NOP")) {
                     ta_log.append("Invalid instruction at line "+i+"\n");
                 } else {
+                    opCodes.add(opcode);
                     updateOCTable(String.valueOf(i+1), inst.get(i), opCode);
                 }
             } else {
@@ -630,25 +655,6 @@ public class MainView extends JFrame implements DocumentListener{
             }
             i++;
         }
-        /*String temp = label;
-        String newLabel = label.replaceAll("[a-zA-Z]\\w\\s*:\\s*","");
-        if(!label.equals(newLabel)){
-            label = label.replace(newLabel,"");
-            label = label.replace(":","");
-            label = label.replaceAll("\\s","");
-            //System.out.println("Label: " + label + " with length: " + label.length());
-            if(!labels.contains(label) && !Character.isDigit(label.charAt(0))){
-                labels.add(label);
-                return true;
-            } else {
-                ta_log.append("ERROR: Duplicate label found \n");
-                updateOCTable("X", temp, "ERROR");
-                return false;
-            }
-        } else {
-            labels.add("");
-            return true;
-        }*/
         return true;
     }
     
