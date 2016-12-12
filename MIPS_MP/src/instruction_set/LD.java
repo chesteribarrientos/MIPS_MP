@@ -8,6 +8,7 @@ import interfaces.IDependencyCheck;
 import interfaces.IExecutor;
 import machine.EXMEM;
 import machine.Machine;
+import utils.InstructionUtils;
 import utils.OpcodeUtils;
 import utils.Print;
 
@@ -34,7 +35,7 @@ public class LD extends MemoryInstruction implements IConverter, IExecutor, IDep
 		int imm = OpcodeUtils.imm(opcode);
 		long result = rsValue + imm;
 		
-		System.out.println(rsValue + " " + Integer.toHexString(imm) + " " + result + " " + Long.toHexString(result));
+		//System.out.println(rsValue + " " + Integer.toHexString(imm) + " " + result + " " + Long.toHexString(result));
 		exmem.setALUOutput(result);
 		exmem.setCond(false); // can move to super
 	}
@@ -64,7 +65,29 @@ public class LD extends MemoryInstruction implements IConverter, IExecutor, IDep
 
 	@Override
 	public int HasDependency(int opcode, List<Integer> code) {
-		// TODO Auto-generated method stub
+		int index = code.indexOf(opcode);
+    	
+    	int address = OpcodeUtils.rs(opcode) * OpcodeUtils.imm(opcode);
+		
+		//System.out.println("Checking rs, rt: " + rs + "," + rt);
+		int i = index - 1;
+		if(i<0) i = 0;
+		int end = index - 4;
+		if(end < 0) end = 0;
+		
+		while(i >= end){
+			int currOpcode = code.get(i);
+			
+			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasMemoryStore()){
+				int currAddress = OpcodeUtils.rs(currOpcode) * OpcodeUtils.imm(currOpcode);
+				 
+				//System.out.println("R type Writeback Reg - rd: " + rd);
+				if(address == currAddress){
+					return currOpcode;
+				}
+			}
+			i--;
+		}
 		return 0;
 	}
 }

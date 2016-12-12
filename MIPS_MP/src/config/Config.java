@@ -15,4 +15,7 @@ public class Config {
 	public static final Integer[] BRANCH_VALUES = {Opcode.BEQC, Opcode.BC};
 	public static final Set<Integer> BRANCH_SET = new HashSet<Integer>(Arrays.asList(BRANCH_VALUES));
 	
+	public static final Integer[] BRANCH_COMPACT_VALUES = {Opcode.BEQC, Opcode.BC};
+	public static final Set<Integer> BRANCH_COMPACT_SET = new HashSet<Integer>(Arrays.asList(BRANCH_COMPACT_VALUES));
+	
 }

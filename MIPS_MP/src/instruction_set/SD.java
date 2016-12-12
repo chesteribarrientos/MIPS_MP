@@ -8,6 +8,7 @@ import interfaces.IDependencyCheck;
 import interfaces.IExecutor;
 import machine.EXMEM;
 import machine.Machine;
+import utils.InstructionUtils;
 import utils.OpcodeUtils;
 
 /**
@@ -33,7 +34,7 @@ public class SD extends MemoryInstruction implements IConverter, IExecutor, IDep
 		int imm = OpcodeUtils.imm(opcode);
 		long result = rsValue + imm;
 		
-		System.out.println(rsValue + " " + Integer.toHexString(imm) + " " + result + " " + Long.toHexString(result));
+		//System.out.println(rsValue + " " + Integer.toHexString(imm) + " " + result + " " + Long.toHexString(result));
 		exmem.setALUOutput(result);
 		exmem.setCond(false); // can move to super
 	}
@@ -63,7 +64,36 @@ public class SD extends MemoryInstruction implements IConverter, IExecutor, IDep
 
 	@Override
 	public int HasDependency(int opcode, List<Integer> code) {
-		// TODO Auto-generated method stub
+		int index = code.indexOf(opcode);
+		
+		int rt = OpcodeUtils.rt(opcode);
+		//System.out.println("Checking rs, rt: " + rs + "," + rt);
+		int i = index - 1;
+		if(i<0) i = 0;
+		int end = index - 4;
+		if(end < 0) end = 0;
+		
+		while(i >= end){
+			int currOpcode = code.get(i);
+			
+			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasWriteBack()){
+				if(OpcodeUtils.isRType(currOpcode)){
+					int rd = OpcodeUtils.rd(currOpcode);
+					//System.out.println("R type Writeback Reg - rd: " + rd);
+					if(rt == rd){
+						return currOpcode;
+					}
+				}
+				else{
+					int currRt = OpcodeUtils.rt(currOpcode);
+					//System.out.println("Not R type Writeback Reg - rt: " + currRt);
+					if(rt == currRt){
+						return currOpcode;
+					}
+				}
+			}
+			i--;
+		}
 		return 0;
 	}
 }

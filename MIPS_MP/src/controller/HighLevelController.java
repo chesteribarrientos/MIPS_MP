@@ -3,14 +3,10 @@
  */
 package controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import config.Config;
-import interfaces.IConverter;
 import interfaces.IDependencyCheck;
-import machine.IDEX;
 import machine.IFID;
 import machine.MEMWB;
 import machine.Machine;
@@ -62,13 +58,14 @@ public class HighLevelController {
 	int dependencyIR = 0;
 	
 	public void runCycle(){
-		
+		int tempIR = 0;
 		System.out.println("Last IR Wb: " + Stringify.as32bitHex(lastFinishedIR) + " dependencyIR: " + Stringify.as32bitHex(dependencyIR));
-		System.out.println("Stalled: " + stalled);
+		//System.out.println("Stalled: " + stalled);
+		
 		if(cycleFlags.WBisActive()){
 			machine.doWBCycle();
 			MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
-			lastFinishedIR = memwb.IR();
+			tempIR = memwb.IR();
 			cycleFlags.WBactive(false);
 		}
 		if(cycleFlags.MEMisActive()){
@@ -87,7 +84,7 @@ public class HighLevelController {
 			IDependencyCheck ic = (IDependencyCheck) InstructionUtils.getInstructionEnum(ifid.IR()).getInstructionConverter();
 			
 			if(dependencyNotYetChecked) {
-				System.out.println("Checking for dependency, IR: " + Stringify.as32bitHex(ifid.IR()));
+				System.out.println("Checking for dependency");
 				dependencyIR = ic.HasDependency(ifid.IR(), code);
 				if(dependencyIR != 0){
 					System.out.println("dependency found");
@@ -99,6 +96,7 @@ public class HighLevelController {
 			if(lastFinishedIR == dependencyIR){ //if dependency has finished
 				stalled = false;
 			}
+			System.out.println("Stalled: " + stalled);
 			
 			if(!stalled){
 				machine.doIDCycle();
@@ -111,14 +109,16 @@ public class HighLevelController {
 			}
 		}
 		
-		if(cycleFlags.IFisActive()){
+		if(cycleFlags.IFisActive() && machine.getPC() <= EoFCode){
 			if(!stalled) {
 				machine.doIFCycle();
-				cycleFlags.IDactive(true);
+				if(!machine.hasBranchedCompact())
+					cycleFlags.IDactive(true);
 			}
 			else{
 				System.out.println("Stalled IF");
 			}
 		}
+		lastFinishedIR = tempIR;
 	}
 }

@@ -124,6 +124,12 @@ public class Machine {
 	/**
 	 * pipeline control
 	 **/
+	private boolean branchedCompact = false;
+	
+	public boolean hasBranchedCompact(){
+		return branchedCompact;
+	}
+	
 	public void doIFCycle(){
 		//System.out.println("***IF***");
 		IFID ifid = (IFID) pipeline.get("IF/ID");
@@ -132,8 +138,12 @@ public class Machine {
 		int opcode = loadWordFromMemory((int)PC); //fetch
 		ifid.setIR(opcode);
 		//check branch
-		if(OpcodeUtils.isBranch(old) && OpcodeUtils.opOutput(old)){
-			PC = ifid.NPC() + OpcodeUtils.imm(old) << 2;
+		branchedCompact = false;
+		if(OpcodeUtils.isBranch(old) && OpcodeUtils.opOutput(old, this)){
+			PC = ifid.NPC() + (OpcodeUtils.imm(old) << 2);
+			if(OpcodeUtils.isCompactBranch(old)){
+				branchedCompact = true;
+			} 
 		}
 		else{
 			PC += 4;
