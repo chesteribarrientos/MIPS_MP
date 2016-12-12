@@ -23,7 +23,8 @@ public class TestPipeline {
 		Machine machine = new Machine();
 		//String code = "DADDIU r1, r0, 0x8001";
 		//String code = "XOR r5, r1, r3";
-		String code = "DSUBU r5, r1, r3";
+		//String code = "DSUBU r5, r1, r3";
+		String code = "SLT r5, r1, r3";
 		int opcode = InstructionUtils.getInstructionEnum(code).getInstructionConverter().getOpcode(code);
 		machine.storeWordToMemory(Config.CODE_START, opcode);
 		
@@ -37,7 +38,7 @@ public class TestPipeline {
 		// test DSUBU
 		// note: dsubu is not unsigned
 		machine.storeToGPR(1, 1);
-		machine.storeToGPR(3, -2);
+		machine.storeToGPR(3, 2);
 		
 		machine.doIFCycle();
 		machine.doIDCycle();
@@ -50,12 +51,10 @@ public class TestPipeline {
 		//Print.as64bitHex(machine.loadFromGPR(OpcodeUtils.rt(opcode)));
 		
 		// R-type
-		// XOR Example
+		// XOR, DSUBU Example
 		System.out.print("R" + OpcodeUtils.rd(opcode) + " = ");
 		Print.as64bitHex(machine.loadFromGPR(OpcodeUtils.rd(opcode)));
 		System.out.println("done");
-		
-		// DSUBU Example
 	}
 
 }

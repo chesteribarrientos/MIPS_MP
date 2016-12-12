@@ -29,10 +29,7 @@ public class XOR extends RType implements IConverter, IExecutor {
 		long rtValue = machine.loadFromGPR(rt);
 		
 		long result = rsValue ^ rtValue;
-		
-		System.out.println(Long.toBinaryString(rsValue));
-		System.out.println(Long.toBinaryString(rtValue));
-		System.out.println("Result: " + result);
+
 		exmem.setALUOutput(result);
 		exmem.setCond(false);
     }
