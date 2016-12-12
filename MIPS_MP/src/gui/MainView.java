@@ -502,6 +502,7 @@ public class MainView extends JFrame {
         for (String label : inst) {
             String newLabel = label.replaceAll("[a-zA-Z]\\w\\s*:\\s*","");
             if(!label.equals(newLabel)) {
+            	System.out.println(newLabel);
                 label = label.replace(newLabel,"");
                 label = label.replace(":","");
                 label = label.replaceAll("\\s","");

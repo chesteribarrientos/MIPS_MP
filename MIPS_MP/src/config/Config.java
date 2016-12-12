@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class Config {
 
-	public static final int MEMORY_SIZE = 2048;
+	public static final int MEMORY_SIZE = 8192;
 	public static final int CODE_START = 0x1000;
 	public static final int CODE_END = 0x2FFF;
 	public static final int DATA_START = 0x3000;

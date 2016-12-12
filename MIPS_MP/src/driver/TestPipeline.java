@@ -3,8 +3,11 @@
  */
 package driver;
 
+import java.util.ArrayList;
+
 import config.Config;
 import machine.Machine;
+import utils.BranchUtils;
 import utils.InstructionUtils;
 import utils.OpcodeUtils;
 import utils.Print;
@@ -28,12 +31,11 @@ public class TestPipeline {
 		//String code = "LD r4, 1000(r1)"; 
 		//String code = "SD r4, 1000(r1)";
 		int opcode = InstructionUtils.getInstructionEnum(code).getInstructionConverter().getOpcode(code);
-                System.out.println(opcode);
 		machine.storeWordToMemory(Config.CODE_START, opcode);
 		
 		System.out.print("Opcode fetched: ");
 		Print.as32bitHex(machine.loadWordFromMemory(Config.CODE_START));
-
+		
 		// test R-Type
 		// note: dsubu is not unsigned
 		//machine.storeToGPR(1, 1);
