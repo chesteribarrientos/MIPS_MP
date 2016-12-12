@@ -554,6 +554,7 @@ public class MainView extends JFrame implements DocumentListener{
                 ta_inReg.append(memwb.toString()+"\n");
                 ta_inReg.append("--------------------------\n");
                 check++;
+                updateRegisters();
             } else {
                 soft = true;
             }
