@@ -14,6 +14,7 @@ import machine.IDEX;
 import machine.MEMWB;
 import machine.Machine;
 import utils.InstructionUtils;
+import utils.Stringify;
 
 /**
  * @author Chester
@@ -33,10 +34,7 @@ public class HighLevelController {
 	public HighLevelController(Machine machine){
 		this.machine = machine;
 		EoFCode = Config.CODE_START;
-		//code = new ArrayList<Integer>();
-		cycleFlags = new CycleFlags();
-		//IDEX idex = machine.getPipeline().get("ID/EX");
-		
+		cycleFlags = new CycleFlags(); //set of flags for each cycle
 		cycleFlags.IFactive(true); //remove later
 	}
 	
@@ -59,9 +57,13 @@ public class HighLevelController {
 	}
 	
 	boolean stalled = false;
+	boolean dependencyNotYetChecked = true;
+	int dependencyIR = 0;
+	
 	public void runCycle(){
-		boolean dependencyNotYetChecked = true;
 		
+		System.out.println("Last IR Wb: " + Stringify.as32bitHex(lastFinishedIR) + " dependencyIR: " + Stringify.as32bitHex(dependencyIR));
+		System.out.println("Stalled: " + stalled);
 		if(cycleFlags.WBisActive()){
 			machine.doWBCycle();
 			MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
@@ -78,19 +80,21 @@ public class HighLevelController {
 			cycleFlags.EXactive(false);
 			cycleFlags.MEMactive(true);
 		}
+		
 		if(cycleFlags.IDisActive()){
 			IDEX idex = (IDEX) machine.getPipeline().get("ID/EX");
 			IDependencyCheck ic = (IDependencyCheck) InstructionUtils.getInstructionEnum(idex.IR()).getInstructionConverter();
 			
 			if(dependencyNotYetChecked) {
-				if(ic.HasDependency(idex.IR(), code)){
+				dependencyIR = ic.HasDependency(idex.IR(), code);
+				if(dependencyIR != 0){
 					System.out.println("dependency found");
 					stalled = true;
 				}
 				dependencyNotYetChecked = false;
 			}
 			
-			if(lastFinishedIR == idex.IR()){
+			if(lastFinishedIR == dependencyIR){ //if dependency has finished
 				stalled = false;
 			}
 			
@@ -98,13 +102,21 @@ public class HighLevelController {
 				machine.doIDCycle();
 				cycleFlags.IDactive(false);
 				cycleFlags.EXactive(true);
-				
+				dependencyNotYetChecked = true; //check for dependency of next ID Cycle again
+			}
+			else {
+				System.out.println("Stalled ID: " + Stringify.as32bitHex(idex.IR()));
 			}
 		}
+		
 		if(cycleFlags.IFisActive()){
-			machine.doIFCycle();
-			//cycleFlags.IFactive(false);
-			cycleFlags.IDactive(true);
+			if(!stalled) {
+				machine.doIFCycle();
+				cycleFlags.IDactive(true);
+			}
+			else{
+				System.out.println("Stalled IF: ");
+			}
 		}
 	}
 }
