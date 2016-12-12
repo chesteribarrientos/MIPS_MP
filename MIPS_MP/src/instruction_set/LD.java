@@ -63,8 +63,8 @@ public class LD extends MemoryInstruction implements IConverter, IExecutor, IDep
 	}
 
 	@Override
-	public boolean HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code) {
 		// TODO Auto-generated method stub
-		return false;
+		return 0;
 	}
 }

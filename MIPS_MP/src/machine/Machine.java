@@ -162,6 +162,7 @@ public class Machine {
 		executor.execute(idex.IR(), this);
 		
 		exmem.setIR(idex.IR());
+		exmem.setB(idex.B());
 	}
 	
 	public void doMemCycle(){

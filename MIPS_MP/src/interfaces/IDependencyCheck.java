@@ -12,5 +12,5 @@ import java.util.List;
 public interface IDependencyCheck {
 	public boolean hasWriteBack();
 	public boolean hasMemoryStore();
-	public boolean HasDependency(int opcode, List<Integer> code);
+	public int HasDependency(int opcode, List<Integer> code);
 }

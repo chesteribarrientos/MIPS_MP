@@ -82,12 +82,12 @@ public class RType implements IDependencyCheck{
 	}
 
 	@Override
-	public boolean HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code) {
 		int index = code.indexOf(opcode);
     	
     	int rs = OpcodeUtils.rs(opcode);
 		int rt = OpcodeUtils.rt(opcode);
-		
+		System.out.println("rs/rt: " + rs + "," + rt);
 		int i = index - 1;
 		if(i<0) i = 0;
 		int end = index - 4;
@@ -99,19 +99,21 @@ public class RType implements IDependencyCheck{
 			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasWriteBack()){
 				if(OpcodeUtils.isRType(currOpcode)){
 					int rd = OpcodeUtils.rd(currOpcode);
+					System.out.println("R type, rd: " + rd);
 					if(rs == rd || rt == rd){
-						return true;
+						return currOpcode;
 					}
 				}
 				else{
 					int currRt = OpcodeUtils.rt(currOpcode);
+					System.out.println("Not R type, rt: " + currRt);
 					if(rs == currRt || rt == currRt){
-						return true;
+						return currOpcode;
 					}
 				}
 			}
 			i--;
 		}
-		return false;
+		return 0;
 	}
 }

@@ -58,8 +58,8 @@ public class DADDIU extends ITypeArithmetic implements IConverter, IExecutor, ID
 	}
 
 	@Override
-	public boolean HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code) {
 		// TODO Auto-generated method stub
-		return false;
+		return 0;
 	}	
 }
