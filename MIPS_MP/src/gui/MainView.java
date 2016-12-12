@@ -54,9 +54,9 @@ import utils.OpcodeUtils;
  */
 public class MainView extends JFrame {
     private final JPanel p_main, p_reg, p_pipeline;
-    private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_textEdit, lbl_R;
-    private final JTextArea ta_log, ta_inReg, ta_textEdit;
-    private final JScrollPane jsp_1, jsp_2, jsp_3, jsp_4, jsp_5, jsp_6;
+    private final JLabel lbl_opCode, lbl_error, lbl_pMap, lbl_inReg, lbl_R;
+    private final JTextArea ta_log, ta_inReg;
+    private final JScrollPane jsp_1, jsp_2, jsp_3, jsp_4, jsp_5;
     private final ArrayList<JTextField> tf_register;
     private final ArrayList<JLabel> lbl_register;
     private JFileChooser jfc;
@@ -73,7 +73,7 @@ public class MainView extends JFrame {
     private Machine machine;
     
     private JMenu file, run;
-    private JMenuItem open, save, runSingle, runFull;
+    private JMenuItem open, runSingle, runFull;
     //private JMenuItem exit;
     
     public MainView(){
@@ -95,13 +95,11 @@ public class MainView extends JFrame {
         lbl_error       = new JLabel("Activity and Error Log");
         lbl_pMap        = new JLabel("Pipeline Map");
         lbl_inReg       = new JLabel("Internal MIPS64 Registers");
-        lbl_textEdit    = new JLabel("Text Editor");
         lbl_R           = new JLabel("Registers");
         lbl_opCode.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_error.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_pMap.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_inReg.setFont(new Font("Calibri", Font.PLAIN, 14));
-        lbl_textEdit.setFont(new Font("Calibri", Font.PLAIN, 14));
         lbl_R.setFont(new Font("Calibri", Font.PLAIN, 14));
         
         ta_log      = new JTextArea(10,30);
@@ -111,9 +109,6 @@ public class MainView extends JFrame {
         ta_log.setLineWrap(true);
         ta_inReg    = new JTextArea(10,20);
         ta_inReg.setEditable(false);
-        ta_textEdit    = new JTextArea(10,20);
-        ta_textEdit.setWrapStyleWord(true);
-        ta_textEdit.setLineWrap(true);
         
         p_main          = new JPanel();
         p_main.setLayout(new GridBagLayout());
@@ -155,20 +150,18 @@ public class MainView extends JFrame {
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_2 = new JScrollPane(ta_log, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        jsp_3 = new JScrollPane(ta_textEdit, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+        jsp_3 = new JScrollPane(p_reg, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_4 = new JScrollPane(p_pipeline, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_5 = new JScrollPane(ta_inReg, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        jsp_6 = new JScrollPane(p_reg, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp_1.setPreferredSize(new Dimension(140, 200));
-        jsp_2.setPreferredSize(new Dimension(50, 200));
-        jsp_3.setPreferredSize(new Dimension(100, 200));
+        jsp_2.setPreferredSize(new Dimension(100, 200));
+        jsp_3.setPreferredSize(new Dimension(100, 485));
         jsp_4.setPreferredSize(new Dimension(120, 250));
-        jsp_5.setPreferredSize(new Dimension(80, 250));
-        jsp_6.setPreferredSize(new Dimension(100, 250));
+        jsp_5.setPreferredSize(new Dimension(100, 250));
+        //jsp_6.setPreferredSize(new Dimension(100, 250));
         
         GridBagConstraints c = new GridBagConstraints();
         
@@ -185,7 +178,7 @@ public class MainView extends JFrame {
         this.p_main.add(lbl_error, c);
         
         c.gridx = 2;
-        this.p_main.add(lbl_textEdit, c);
+        this.p_main.add(lbl_R, c);
         
         //Second Line
         c = new GridBagConstraints();
@@ -201,6 +194,7 @@ public class MainView extends JFrame {
         this.p_main.add(jsp_2, c);
         
         c.gridx = 2;
+        c.gridheight = 3;
         this.p_main.add(jsp_3, c);
         
         //Third Line
@@ -216,8 +210,8 @@ public class MainView extends JFrame {
         c.gridx = 1;
         this.p_main.add(lbl_inReg, c);
         
-        c.gridx = 2;
-        this.p_main.add(lbl_R, c);
+        //c.gridx = 2;
+        //this.p_main.add(lbl_R, c);
         
         //Fourth Line
         c = new GridBagConstraints();
@@ -232,8 +226,8 @@ public class MainView extends JFrame {
         c.gridx = 1;
         this.p_main.add(jsp_5, c);
         
-        c.gridx = 2;
-        this.p_main.add(jsp_6, c);
+        //c.gridx = 2;
+        //this.p_main.add(jsp_6, c);
         
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	setPreferredSize(new Dimension(900,600));
@@ -251,16 +245,11 @@ public class MainView extends JFrame {
         file = new JMenu("File");
         run = new JMenu("Run");
         open = new JMenuItem("Open");
-        save = new JMenuItem("Save");
         runFull = new JMenuItem("Run (Full Cycle)");
         runSingle = new JMenuItem("Run (Single Cycle)");
         
         open.addActionListener((ActionEvent e) -> {
             openFile();
-        });
-        
-        save.addActionListener((ActionEvent e) -> {
-            saveFile();
         });
         
         runSingle.addActionListener((ActionEvent e) -> {
@@ -281,11 +270,8 @@ public class MainView extends JFrame {
         
         open.registerKeyboardAction((ActionEvent e) -> {open.doClick();},
                 KeyStroke.getKeyStroke('O', Event.CTRL_MASK, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
-        save.registerKeyboardAction((ActionEvent e) -> {save.doClick();},
-                KeyStroke.getKeyStroke('S', Event.CTRL_MASK, false), JComponent.WHEN_IN_FOCUSED_WINDOW);
         
         file.add(open);
-        file.add(save);
         run.add(runFull);
         run.add(runSingle);
         mb.add(file);
@@ -295,7 +281,6 @@ public class MainView extends JFrame {
     }
     
     private void clearFields(){
-        ta_textEdit.setText("");
         ta_inReg.setText("");
         int rc = model.getRowCount();
         for(int i=0;i<rc;i++){
@@ -333,7 +318,6 @@ public class MainView extends JFrame {
                 int i = 1;
 
                 while ((line = reader.readLine()) != null) {
-                    ta_textEdit.append(line+"\n");
                     line = line.replaceAll("\t","");
                     /*if(!dotcode){
                         line = line.replaceAll("\\s","");
@@ -371,33 +355,6 @@ public class MainView extends JFrame {
             }
         } else {
             ta_log.append("Open command cancelled by user\n\n");
-        }
-    }
-    
-    private void saveFile(){
-        /*jfc = new JFileChooser(path);
-        FileFilter filter = new FileNameExtensionFilter("Assembly Files", "asm", "s");
-        jfc.setDialogTitle("Save Assembly File"); 
-        jfc.setAcceptAllFileFilterUsed(false);
-        jfc.addChoosableFileFilter(filter);
-        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int option = jfc.showSaveDialog(this);*/
-        String temp = ta_textEdit.getText();
-        
-        if (temp != null) {
-            String[] lines = temp.split("\n");
-            try(BufferedWriter bw = new BufferedWriter(new FileWriter(path+baseFile.getName()))){
-                for (String line : lines) {
-                    System.out.println(line);
-                    bw.write(line + "\n");
-                }
-                //bw.close();
-                ta_log.append("File saved to "+baseFile+"\n\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            ta_log.append("Nothing to save yet.\n\n");
         }
     }
     
