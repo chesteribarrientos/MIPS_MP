@@ -1,6 +1,9 @@
 package instruction_set;
 
+import java.util.List;
+
 import interfaces.IConverter;
+import interfaces.IDependencyCheck;
 import interfaces.IExecutor;
 import machine.EXMEM;
 import machine.MEMWB;
@@ -10,7 +13,7 @@ import utils.OpcodeUtils;
 /**
  * @author laurencefoz
  */
-public class DADDIU extends ITypeArithmetic implements IConverter, IExecutor {
+public class DADDIU extends ITypeArithmetic implements IConverter, IExecutor, IDependencyCheck {
     
     @Override
     public int getOpcode(String statement) {
@@ -41,5 +44,22 @@ public class DADDIU extends ITypeArithmetic implements IConverter, IExecutor {
 		// TODO Auto-generated method stub
 		super.doWriteback(opcode, machine);
 	}
-    
+
+	@Override
+	public boolean hasWriteBack() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean hasMemoryStore() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean HasDependency(int opcode, List<Integer> code) {
+		// TODO Auto-generated method stub
+		return false;
+	}	
 }

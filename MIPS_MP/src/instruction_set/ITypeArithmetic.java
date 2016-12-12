@@ -1,5 +1,6 @@
 package instruction_set;
 
+import interfaces.IDependencyCheck;
 import machine.EXMEM;
 import machine.MEMWB;
 import machine.Machine;

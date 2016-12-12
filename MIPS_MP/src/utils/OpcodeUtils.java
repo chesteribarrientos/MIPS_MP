@@ -43,8 +43,13 @@ public class OpcodeUtils {
 		return opcode & 0b111111;
 	}
 
-	/** get opcode enum from opcode **/
-
+	public static boolean isRType(int opcode){
+		return opcode6(opcode) == Opcode.RType;
+	}
+	
+	public static boolean isNOP(int opcode){
+		return opcode == 0;
+	}
 	/** for type detection **/
 	public static boolean isBranch(int opcode) {
 		if (Config.BRANCH_SET.contains(opcode6(opcode))) {

@@ -2,6 +2,7 @@ package instruction_set;
 
 import config.Opcode;
 import interfaces.IConverter;
+import interfaces.IDependencyCheck;
 import interfaces.IExecutor;
 import machine.EXMEM;
 import machine.Machine;
@@ -10,7 +11,7 @@ import utils.OpcodeUtils;
 /**
  * @author laurencefoz
  */
-public class DSUBU extends RType implements IConverter, IExecutor {
+public class DSUBU extends RType implements IConverter, IExecutor, IDependencyCheck {
     @Override
     public int getOpcode(String statement) {
     	//if (super.getRegisterOps(statement) == Opcode.NOP) return 0x0;
@@ -41,5 +42,5 @@ public class DSUBU extends RType implements IConverter, IExecutor {
     @Override
 	public void execute_writeback(int opcode, Machine machine) {
     	super.doWriteBack(opcode, machine);
-    }
+    }	
 }

@@ -1,7 +1,10 @@
 package instruction_set;
 
+import java.util.List;
+
 import config.Opcode;
 import interfaces.IConverter;
+import interfaces.IDependencyCheck;
 import interfaces.IExecutor;
 import machine.EXMEM;
 import machine.Machine;
@@ -12,7 +15,7 @@ import utils.Print;
  * @author laurencefoz
  */
 
-public class LD extends MemoryInstruction implements IConverter, IExecutor {
+public class LD extends MemoryInstruction implements IConverter, IExecutor, IDependencyCheck {
     @Override
     public int getOpcode(String statement) {
         return (Opcode.LD << 26) | super.getPartial(statement);
@@ -45,5 +48,23 @@ public class LD extends MemoryInstruction implements IConverter, IExecutor {
 	@Override
 	public void execute_writeback(int opcode, Machine machine) {
 		super.doWriteBack(opcode, machine);
+	}
+
+	@Override
+	public boolean hasWriteBack() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean hasMemoryStore() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean HasDependency(int opcode, List<Integer> code) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

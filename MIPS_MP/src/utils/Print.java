@@ -1,6 +1,14 @@
 package utils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import machine.EXMEM;
+import machine.IDEX;
+import machine.IFID;
+import machine.MEMWB;
+import machine.Pipeline;
 
 /**
  * 
@@ -45,5 +53,22 @@ public class Print {
 		for (int opcode : code) {
 			as32bitHex(opcode);
 		}
+	}
+	
+	public static void pipeline(HashMap<String,Pipeline> pipeline){
+		IFID ifid = (IFID) pipeline.get("IF/ID");
+		IDEX idex = (IDEX) pipeline.get("ID/EX");
+		EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
+		MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
+		
+		System.out.println(ifid.toString());
+		System.out.println("******");
+		System.out.println(idex.toString());
+		System.out.println("******");
+		System.out.println(exmem.toString());
+		System.out.println("******");
+		System.out.println(memwb.toString());
+		System.out.println("******");
+		
 	}
 }

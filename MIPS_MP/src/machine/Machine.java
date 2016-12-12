@@ -126,6 +126,7 @@ public class Machine {
 	 * pipeline control
 	 **/
 	public void doIFCycle(){
+		//System.out.println("***IF***");
 		IFID ifid = (IFID) pipeline.get("IF/ID");
 		int old = ifid.IR();
 		
@@ -142,6 +143,7 @@ public class Machine {
 	}
 	
 	public void doIDCycle(){
+		//System.out.println("***ID***");
 		IDEX idex = (IDEX) pipeline.get("ID/EX");
 		IFID ifid = (IFID) pipeline.get("IF/ID");
 		
@@ -152,6 +154,7 @@ public class Machine {
 	}
 	
 	public void doExCycle(){
+		//System.out.println("***EX***");
 		IDEX idex = (IDEX) pipeline.get("ID/EX");
 		EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
 
@@ -162,6 +165,7 @@ public class Machine {
 	}
 	
 	public void doMemCycle(){
+		//System.out.println("***MEM***");
 		EXMEM exmem = (EXMEM) pipeline.get("EX/MEM");
 		MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
 		memwb.setIR(exmem.IR());
@@ -171,12 +175,10 @@ public class Machine {
 	}
 	
 	public void doWBCycle(){
-		//nope still not using switch case here, doing the enum way
-		
+		//System.out.println("***WB***");
 		MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
 		IExecutor executor = (IExecutor) InstructionUtils.getInstructionEnum(memwb.IR()).getInstructionConverter();
 		executor.execute_writeback(memwb.IR(), this);
 		
 	}
-
 }
