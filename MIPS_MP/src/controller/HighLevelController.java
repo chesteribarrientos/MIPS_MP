@@ -75,8 +75,8 @@ public class HighLevelController {
 		int tempIR = 0;
 		System.out.println("Last IR Wb: " + Stringify.as32bitHex(lastFinishedIR) + " dependencyIR: " + Stringify.as32bitHex(dependencyIR));
 		//System.out.println("Stalled: " + stalled);
-		
-                if(machine.getPC() == EoFCode){
+
+                if(machine.getPC() >= EoFCode){
                     setDone();
                 }
                 
