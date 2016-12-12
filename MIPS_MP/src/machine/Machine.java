@@ -33,7 +33,6 @@ public class Machine {
 		pipeline.put("ID/EX", new IDEX());
 		pipeline.put("EX/MEM", new EXMEM());
 		pipeline.put("MEM/WB", new MEMWB());
-		//pipeline.put("WB", new WB()); //kind of pointless
 	}
 	public Registers getRegisters() {
 		return registers;
@@ -179,7 +178,6 @@ public class Machine {
 		//System.out.println("***WB***");
 		MEMWB memwb = (MEMWB) pipeline.get("MEM/WB");
 		IExecutor executor = (IExecutor) InstructionUtils.getInstructionEnum(memwb.IR()).getInstructionConverter();
-		executor.execute_writeback(memwb.IR(), this);
-		
+		executor.execute_writeback(memwb.IR(), this);		
 	}
 }

@@ -87,7 +87,7 @@ public class RType implements IDependencyCheck{
     	
     	int rs = OpcodeUtils.rs(opcode);
 		int rt = OpcodeUtils.rt(opcode);
-		System.out.println("rs/rt: " + rs + "," + rt);
+		//System.out.println("Checking rs, rt: " + rs + "," + rt);
 		int i = index - 1;
 		if(i<0) i = 0;
 		int end = index - 4;
@@ -99,14 +99,14 @@ public class RType implements IDependencyCheck{
 			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasWriteBack()){
 				if(OpcodeUtils.isRType(currOpcode)){
 					int rd = OpcodeUtils.rd(currOpcode);
-					System.out.println("R type, rd: " + rd);
+					//System.out.println("R type Writeback Reg - rd: " + rd);
 					if(rs == rd || rt == rd){
 						return currOpcode;
 					}
 				}
 				else{
 					int currRt = OpcodeUtils.rt(currOpcode);
-					System.out.println("Not R type, rt: " + currRt);
+					//System.out.println("Not R type Writeback Reg - rt: " + currRt);
 					if(rs == currRt || rt == currRt){
 						return currOpcode;
 					}

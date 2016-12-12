@@ -29,7 +29,6 @@ public class TestDependency {
 		List<String> code = new ArrayList<String>();
 		code.add("DADDIU R5, R0, 0x0004");
 		code.add("XOR r6, r0, r5");
-		code.add("DSUBU r7, r5, r0");
 		//code.add("SLT r5, r1, r3");
 		//code.add("LD r4, 1000(r1)"); 
 		//code.add("SD r4, 1000(r1)");
@@ -61,6 +60,19 @@ public class TestDependency {
 		controller.runCycle();
 		Print.pipeline(machine.getPipeline());
 		System.out.println("-------------------------------------------");
+		
+		controller.runCycle();
+		Print.pipeline(machine.getPipeline());
+		System.out.println("-------------------------------------------");
+		
+		controller.runCycle();
+		Print.pipeline(machine.getPipeline());
+		System.out.println("-------------------------------------------");
+		
+		controller.runCycle();
+		Print.pipeline(machine.getPipeline());
+		System.out.println("-------------------------------------------");
+		
 		
 	}
 

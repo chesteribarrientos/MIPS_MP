@@ -11,6 +11,7 @@ import config.Config;
 import interfaces.IConverter;
 import interfaces.IDependencyCheck;
 import machine.IDEX;
+import machine.IFID;
 import machine.MEMWB;
 import machine.Machine;
 import utils.InstructionUtils;
@@ -82,11 +83,12 @@ public class HighLevelController {
 		}
 		
 		if(cycleFlags.IDisActive()){
-			IDEX idex = (IDEX) machine.getPipeline().get("ID/EX");
-			IDependencyCheck ic = (IDependencyCheck) InstructionUtils.getInstructionEnum(idex.IR()).getInstructionConverter();
+			IFID ifid = (IFID) machine.getPipeline().get("IF/ID");
+			IDependencyCheck ic = (IDependencyCheck) InstructionUtils.getInstructionEnum(ifid.IR()).getInstructionConverter();
 			
 			if(dependencyNotYetChecked) {
-				dependencyIR = ic.HasDependency(idex.IR(), code);
+				System.out.println("Checking for dependency, IR: " + Stringify.as32bitHex(ifid.IR()));
+				dependencyIR = ic.HasDependency(ifid.IR(), code);
 				if(dependencyIR != 0){
 					System.out.println("dependency found");
 					stalled = true;
@@ -105,7 +107,7 @@ public class HighLevelController {
 				dependencyNotYetChecked = true; //check for dependency of next ID Cycle again
 			}
 			else {
-				System.out.println("Stalled ID: " + Stringify.as32bitHex(idex.IR()));
+				System.out.println("Stalled ID: " + Stringify.as32bitHex(ifid.IR()));
 			}
 		}
 		
@@ -115,7 +117,7 @@ public class HighLevelController {
 				cycleFlags.IDactive(true);
 			}
 			else{
-				System.out.println("Stalled IF: ");
+				System.out.println("Stalled IF");
 			}
 		}
 	}

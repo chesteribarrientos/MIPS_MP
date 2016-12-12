@@ -8,5 +8,14 @@ package machine;
  *
  */
 public class WB extends Pipeline{
-	//nothing here yet
+	private String register;
+
+	public String getRegister() {
+		return register;
+	}
+
+	public void setRegister(String register) {
+		this.register = register;
+	}
+	
 }
