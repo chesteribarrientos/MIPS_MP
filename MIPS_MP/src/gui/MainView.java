@@ -140,7 +140,7 @@ public class MainView extends JFrame implements DocumentListener{
             tf_temp.addKeyListener(new KeyAdapter(){
                 public void keyTyped(KeyEvent e) {
                     char c = e.getKeyChar();
-                    if ( ((c < '0') || (c > '9')) && ((c < 'A') || (c > 'F')) ) {
+                    if ( ((c < '0') || (c > '9')) && ((c < 'A') || (c > 'F')) && tf_temp.getText().length() <= 16 ) {
                         e.consume();  // ignore event
                     }
                 }
@@ -274,7 +274,9 @@ public class MainView extends JFrame implements DocumentListener{
         runSingle.addActionListener((ActionEvent e) -> {
             if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
-            } else{
+            } else if(!checkIfValid()) {
+                ta_log.append("One of your textfields is too short.\n");
+            } else {
                 addTable(true);
             }
         });
@@ -282,7 +284,9 @@ public class MainView extends JFrame implements DocumentListener{
         runFull.addActionListener((ActionEvent e) -> {
             if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
-            } else{
+            } else if(!checkIfValid()){
+                ta_log.append("One of your textfields is too short.\n");
+            } else {
                 addTable(false);
             }
         });
@@ -297,6 +301,15 @@ public class MainView extends JFrame implements DocumentListener{
         mb.add(run);
         
         return mb;
+    }
+    
+    public boolean checkIfValid(){
+        for(int i=0; i<tf_register.size(); i++){
+           if(tf_register.get(i).getText().length() < 16){
+               return false;
+           } 
+        }
+        return true;
     }
     
     @Override
