@@ -74,11 +74,9 @@ public class HighLevelController {
 	public void runCycle(){
 		int tempIR = 0;
 		System.out.println("Last IR Wb: " + Stringify.as32bitHex(lastFinishedIR) + " dependencyIR: " + Stringify.as32bitHex(dependencyIR));
+		
 		//System.out.println("Stalled: " + stalled);
-
-                if(machine.getPC() >= EoFCode){
-                    setDone();
-                }
+                
                 
 		if(cycleFlags.WBisActive()){
 			machine.doWBCycle();
@@ -138,5 +136,9 @@ public class HighLevelController {
 			}
 		}
 		lastFinishedIR = tempIR;
+		//System.out.println(code.size()-1 + " " + code.get(code.size()-1));
+		if((lastFinishedIR == code.get(code.size()-1)) && lastFinishedIR >= EoFCode){
+            setDone();
+        }
 	}
 }
