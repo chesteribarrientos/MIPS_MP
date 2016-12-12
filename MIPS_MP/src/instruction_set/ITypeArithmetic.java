@@ -1,9 +1,12 @@
 package instruction_set;
 
+import java.util.List;
+
 import interfaces.IDependencyCheck;
 import machine.EXMEM;
 import machine.MEMWB;
 import machine.Machine;
+import utils.InstructionUtils;
 import utils.OpcodeUtils;
 
 /**
@@ -11,7 +14,7 @@ import utils.OpcodeUtils;
  * @author Chester
  *
  */
-public class ITypeArithmetic {
+public class ITypeArithmetic implements IDependencyCheck {
 
 	public int getPartial(String statement) {
 		String[] words = statement.split("[,\\s]+");
@@ -44,4 +47,51 @@ public class ITypeArithmetic {
 		
 		memwb.setALUOutput(exmem.ALUOutput());
     }
+
+	@Override
+	public boolean hasWriteBack() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean hasMemoryStore() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public int HasDependency(int opcode, List<Integer> code) {
+		int index = code.indexOf(opcode);
+		
+		int rs = OpcodeUtils.rs(opcode);
+		//System.out.println("Checking rs, rt: " + rs + "," + rt);
+		int i = index - 1;
+		if(i<0) i = 0;
+		int end = index - 4;
+		if(end < 0) end = 0;
+		
+		while(i >= end){
+			int currOpcode = code.get(i);
+			
+			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasWriteBack()){
+				if(OpcodeUtils.isRType(currOpcode)){
+					int rd = OpcodeUtils.rd(currOpcode);
+					//System.out.println("R type Writeback Reg - rd: " + rd);
+					if(rs == rd){
+						return currOpcode;
+					}
+				}
+				else{
+					int currRt = OpcodeUtils.rt(currOpcode);
+					//System.out.println("Not R type Writeback Reg - rt: " + currRt);
+					if(rs == currRt){
+						return currOpcode;
+					}
+				}
+			}
+			i--;
+		}
+		return 0;
+	}
 }

@@ -44,22 +44,4 @@ public class DADDIU extends ITypeArithmetic implements IConverter, IExecutor, ID
 		// TODO Auto-generated method stub
 		super.doWriteback(opcode, machine);
 	}
-
-	@Override
-	public boolean hasWriteBack() {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	@Override
-	public boolean hasMemoryStore() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
-		// TODO Auto-generated method stub
-		return 0;
-	}	
 }
