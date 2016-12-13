@@ -82,9 +82,10 @@ public class MainView extends JFrame implements DocumentListener{
     private Integer codeAddr, check;
     private Machine machine;
     private HighLevelController hlc;
+    private boolean canStore;
     
-    private JMenu file, run;
-    private JMenuItem open, runSingle, runFull;
+    private JMenu file, run, store;
+    private JMenuItem open, runSingle, runFull, storeMem, storeReg;
     //private JMenuItem exit;
     
     public MainView(){
@@ -101,6 +102,7 @@ public class MainView extends JFrame implements DocumentListener{
         pipes = new ArrayList<>();
         machine = new Machine();
         hlc = new HighLevelController(machine);
+        canStore = true;
         
         tf_register = new ArrayList<>();
         tf_mem = new ArrayList<>();
@@ -148,21 +150,23 @@ public class MainView extends JFrame implements DocumentListener{
         t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
         int start = 12288;
-        for(int i=0; i<2048; i++){
+        for(int i=0; i<1024; i++){
             //System.out.println(Integer.toHexString(start).toUpperCase());
             JLabel lbl_temp = new JLabel(Integer.toHexString(start).toUpperCase());
             JTextField tf_temp = new JTextField(11);
-            /*tf_temp.addKeyListener(new KeyAdapter(){
+            String temp =  Stringify.as64bitHex( machine.loadDoubleFromMemory(i) );
+            tf_temp.setText(temp);
+            tf_temp.addKeyListener(new KeyAdapter(){
                 public void keyTyped(KeyEvent e) {
                     char c = e.getKeyChar();
                     if ( ((c < '0') || (c > '9')) && ((c < 'A') || (c > 'F')) && tf_temp.getText().length() <= 16 ) {
                         e.consume();  // ignore event
                     }
                 }
-            });*/
+            });
             lbl_mem.add(lbl_temp);
             tf_mem.add(tf_temp);
-            start += 4;
+            start += 8;
         }
         
         GridBagConstraints cd = new GridBagConstraints();
@@ -312,12 +316,40 @@ public class MainView extends JFrame implements DocumentListener{
         
         file = new JMenu("File");
         run = new JMenu("Run");
+        store = new JMenu("Store");
         open = new JMenuItem("Open");
         runFull = new JMenuItem("Run (Full Cycle)");
         runSingle = new JMenuItem("Run (Single Cycle)");
+        storeMem = new JMenuItem("Store Memory Values");
+        storeReg = new JMenuItem("Store Register Values");
         
         open.addActionListener((ActionEvent e) -> {
             openFile();
+        });
+        
+        storeMem.addActionListener((ActionEvent e) -> {
+            if(canStore){
+                int start = 12288;
+                for(int i=0; i<1024; i++){
+                    //System.out.println(Integer.toHexString(start).toUpperCase());
+                    long temp = Long.parseLong(tf_mem.get(i).getText(),16);
+                    machine.storeDoubleWordToMemory(start, temp);
+                    start += 8;
+                }
+            } else{
+                ta_log.append("ERROR: Can't store yet! Length too short for input\n");
+            }
+        });
+        
+        storeReg.addActionListener((ActionEvent e) -> {
+            if(canStore){
+                for(int i=0; i<tf_register.size(); i++){
+                    long temp = Long.parseLong(tf_register.get(i).getText(),16);
+                    machine.storeToGPR(i, temp);
+                }
+            } else{
+                ta_log.append("ERROR: Can't store yet! Length too short for input\n");
+            }
         });
         
         runSingle.addActionListener((ActionEvent e) -> {
@@ -329,7 +361,6 @@ public class MainView extends JFrame implements DocumentListener{
                 //addTable(true);
                 doCycle(true);
             }
-            
         });
         
         runFull.addActionListener((ActionEvent e) -> {
@@ -349,8 +380,11 @@ public class MainView extends JFrame implements DocumentListener{
         file.add(open);
         run.add(runFull);
         run.add(runSingle);
+        store.add(storeMem);
+        store.add(storeReg);
         mb.add(file);
         mb.add(run);
+        mb.add(store);
         
         return mb;
     }
@@ -367,12 +401,12 @@ public class MainView extends JFrame implements DocumentListener{
     @Override
     public void insertUpdate(DocumentEvent e) {
         //System.out.println("inserted");
-        //updateLog(e);
+        updateLog(e);
     }
     
     public void removeUpdate(DocumentEvent e) {
         //System.out.println("removed");
-        //updateLog(e);
+        updateLog(e);
     }
     
     public void changedUpdate(DocumentEvent e) {
@@ -384,15 +418,18 @@ public class MainView extends JFrame implements DocumentListener{
         int len = doc.getLength();
         //System.out.println(len);
         if( 16 == len ){
+            canStore = true;
             //System.out.println("inserted\n");
-            for(int i=0; i<tf_register.size(); i++){
+            /*for(int i=0; i<tf_register.size(); i++){
                 long temp = Long.parseLong(tf_register.get(i).getText(),16);
                 machine.storeToGPR(i, temp);
-            }
+            }*/
             /*for(int i=0; i<tf_register.size(); i++){
                 long temp = machine.loadFromGPR(i);
                 System.out.println("R"+i+": "+Stringify.as64bitHex(temp));
             }*/
+        } else {
+            canStore = false;
         }
     }
     
@@ -405,6 +442,17 @@ public class MainView extends JFrame implements DocumentListener{
         p_pipeline.removeAll();
         p_pipeline.repaint();
         p_pipeline.revalidate();
+        long zero = 0;
+        for(int i=0; i<32; i++){
+            tf_register.get(i).setText(Stringify.as64bitHex(zero));
+            machine.storeToGPR(i, zero);
+        }
+        /*int start = 12288;
+        for(int i=0; i<1024; i++){
+            tf_mem.get(i).setText(Stringify.as64bitHex( zero ));
+            machine.storeDoubleWordToMemory(start,zero);
+            start += 8;
+        }*/
     }
     
     private void openFile() {
@@ -416,7 +464,6 @@ public class MainView extends JFrame implements DocumentListener{
         int returnVal = jfc.showDialog(this, "Open File");
         
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            clearFields();
             inst = new ArrayList<>();
             labels = new ArrayList<>();
             pipes = new ArrayList<>();
@@ -425,6 +472,7 @@ public class MainView extends JFrame implements DocumentListener{
             check = 0;
             machine = new Machine();
             hlc = new HighLevelController(machine);
+            clearFields();
             //System.out.println("Pipes Size: "+pipes.size());
             
             baseFile = jfc.getSelectedFile();
@@ -461,11 +509,16 @@ public class MainView extends JFrame implements DocumentListener{
                     ta_log.append(inst.size()+ ( (inst.size()>1 || inst.size()<1) ? " INSTRUCTIONS RETRIEVED!\n\n" : " INSTRUCTION RETRIEVED!\n\n"));
                     List<Integer> tempo = opCodes;
                     hlc.loadCodeIntoMemory(tempo);
-                } /*else if(inst.isEmpty() && !dotcode){
-                    ta_log.append("ERROR: Code Segment not found\n");
-                    ta_log.append("Possible Solution: Check if code has '.code' segment\n");   
-                } else if(!inst.isEmpty() && !valid){
+                } else if(inst.isEmpty()){
+                    ta_log.append("ERROR: Code Empty\n");
+                    ta_log.append("Possible Solution: Check if code exists\n");   
+                }/* else if(!inst.isEmpty() && !valid){
                     ta_log.append("ERROR: Invalid Code: line "+i+"\n");
+                } else{
+                    ta_log.append("Huh?\n");
+                    for(int j=0; j<inst.size();j++){
+                        System.out.println("Inst"+inst.get(i));
+                    }
                 }*/
                 ta_log.append("\n");
                 /*for(int j=0; j<inst.size(); j++){
@@ -673,19 +726,22 @@ public class MainView extends JFrame implements DocumentListener{
             case "LD"       :
             case "SD"       : 
                 if(temp.length>4){
-                    ta_log.append("Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
+                    ta_log.append("ERROR: Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
                 } else if(temp.length<4){
-                    ta_log.append("Too little parameters for instruction : \""+temp[0]+"\" at line "+i+"\n"); }
+                    ta_log.append("ERROR: Too little parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
+                } else if( ("LD".equals(temp[0]) || "SD".equals(temp[0])) && ( Integer.parseInt(temp[2],16) < 12288 || Integer.parseInt(temp[2],16) > 20479  )){
+                    ta_log.append("ERROR: Memory stated not in range : \""+temp[0]+"\" at line "+i+"\n");
+                }
                 break;
             case "BC"       : 
                 if(temp.length>2){
-                    ta_log.append("Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
+                    ta_log.append("ERROR: Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
                 } else if(temp.length<2){
-                    ta_log.append("Too little parameters for instruction : \""+temp[0]+"\" at line "+i+"\n"); }
+                    ta_log.append("ERROR: Too little parameters for instruction : \""+temp[0]+"\" at line "+i+"\n"); }
                 break;
             case "NOP"      :
                 if(temp.length>1){
-                    ta_log.append("Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
+                    ta_log.append("ERROR: Too many parameters for instruction : \""+temp[0]+"\" at line "+i+"\n");
                 }
                 break;
             default: ta_log.append("ERROR: Instruction in your code not found: line "+i+"\n");
@@ -774,6 +830,7 @@ public class MainView extends JFrame implements DocumentListener{
 	temp[1] = firstCol;
 	temp[2] = secondCol;
         model.addRow(temp);
+        codeAddr += 4;
     }
     
     private ArrayList<String> getCode(){
