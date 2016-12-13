@@ -26,7 +26,18 @@ public class Machine {
 		initPipeline();
 		PC = Config.CODE_START;
 	}
-
+	
+	public void resetMachine(){
+		registers = new Registers();
+		memory = new Memory(Config.MEMORY_SIZE);
+		initPipeline();
+		PC = Config.CODE_START;
+	}
+	
+	public void resetPipeline(){
+		initPipeline();
+	}
+	
 	private void initPipeline(){
 		pipeline = new HashMap<String, Pipeline>();
 		pipeline.put("IF/ID", new IFID());

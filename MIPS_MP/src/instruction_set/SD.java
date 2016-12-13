@@ -63,7 +63,7 @@ public class SD extends MemoryInstruction implements IConverter, IExecutor, IDep
 	}
 
 	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code, Machine machine) {
 		int index = code.indexOf(opcode);
 		
 		int rt = OpcodeUtils.rt(opcode);

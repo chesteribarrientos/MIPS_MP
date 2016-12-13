@@ -10,6 +10,7 @@ public class BranchInstruction {
 		EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
 		MEMWB memwb = (MEMWB) machine.getPipeline().get("MEM/WB");
 		
-		if (exmem.Cond() == true) machine.setPC(exmem.ALUOutput());
+		//if (exmem.Cond() == true) machine.setPC(exmem.ALUOutput());
+		//no need because of pipeline #2, creates errors
 	}
 }

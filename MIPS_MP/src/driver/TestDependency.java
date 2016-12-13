@@ -38,9 +38,19 @@ public class TestDependency {
 		//code.add("SD r6, 3000(r1)");
 		//code.add("LD r6, 3000(r1)"); 
 		//code.add("BEQC r1, r0, 0x0002");
-		code.add("DADDIU R5, R0, 0x0004");
-		code.add("DADDIU R5, R0, 0x0005");
-		code.add("DADDIU R5, R0, 0x0006");
+		//code.add("DADDIU R5, R0, 0x0004");
+		//code.add("DADDIU R5, R0, 0x0005");
+		//code.add("DADDIU R5, R0, 0x0006");
+		
+		code.add("BC 0005");
+		code.add("XOR r5, r1, r3");
+		code.add("SLT r3,r1,r2");
+		code.add("NOP");
+		code.add("NOP");
+		code.add("DADDIU r3, r0, 0x0002");
+		code.add("SD r5, 1000(r4)");
+		code.add("ld r1, 1000(r2)");
+		
 		
 		List<Integer> opcodes = new ArrayList<Integer>();
 		for(String s: code) {
@@ -99,7 +109,7 @@ public class TestDependency {
 		Print.pipeline(machine.getPipeline());
 		System.out.println("-------------------------------------------");
 		
-		System.out.println("R5: " + Stringify.as64bitHex(machine.loadFromGPR(5)));
+		System.out.println("R5: " + Stringify.as64bitHex(machine.loadFromGPR(6)));
 	}
 
 }

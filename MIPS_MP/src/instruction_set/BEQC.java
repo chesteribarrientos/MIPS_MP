@@ -36,7 +36,7 @@ public class BEQC extends BranchInstruction implements IConverter, IExecutor, ID
     	EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
 		
 		long imm = OpcodeUtils.imm(opcode);
-		exmem.setALUOutput(machine.getPC() + (imm << 2));
+		exmem.setALUOutput(machine.getPC());
 		
 		if (idex.A() == idex.B()) {
 			exmem.setCond(true) ;
@@ -69,7 +69,7 @@ public class BEQC extends BranchInstruction implements IConverter, IExecutor, ID
 	}
 
 	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code, Machine machine) {
 		int index = code.indexOf(opcode);
 		
 		int rs = OpcodeUtils.rs(opcode);

@@ -46,6 +46,7 @@ public class HighLevelController {
 			index+=4;
 		}
 		EoFCode = index;
+		System.out.println("EOF: " + Stringify.as64bitHex(EoFCode));
 	}
 	
 	public void runCode(){
@@ -101,7 +102,7 @@ public class HighLevelController {
 			
 			if(dependencyNotYetChecked) {
 				System.out.println("Checking for dependency");
-				dependencyIR = ic.HasDependency(ifid.IR(), code);
+				dependencyIR = ic.HasDependency(ifid.IR(), code, machine);
 				if(dependencyIR != 0){
 					System.out.println("dependency found");
 					stalled = true;
@@ -111,6 +112,7 @@ public class HighLevelController {
 			
 			if(lastFinishedIR == dependencyIR){ //if dependency has finished
 				stalled = false;
+				dependencyIR = 0;
 			}
 			System.out.println("Stalled: " + stalled);
 			
@@ -125,8 +127,9 @@ public class HighLevelController {
 			}
 		}
 		
-		if(cycleFlags.IFisActive() && machine.getPC() <= EoFCode){
+		if(cycleFlags.IFisActive() && machine.getPC() < EoFCode){
 			if(!stalled) {
+				System.out.println("fetching...");
 				machine.doIFCycle();
 				if(!machine.hasBranchedCompact())
 					cycleFlags.IDactive(true);
@@ -136,9 +139,19 @@ public class HighLevelController {
 			}
 		}
 		lastFinishedIR = tempIR;
+		
+		//System.out.println("eof check");
+		//System.out.println(machine.getPC());
+		//System.out.println(EoFCode);
+		if(machine.getPC() ==EoFCode){
+			System.out.println("Last instruction fetched");
+			
+		}
+		
 		//System.out.println(code.size()-1 + " " + code.get(code.size()-1));
-		if((lastFinishedIR == code.get(code.size()-1)) && lastFinishedIR >= EoFCode){
-            setDone();
+		if((lastFinishedIR == code.get(code.size()-1))){
+			System.out.println("Code Done");
+			setDone();
         }
 	}
 }

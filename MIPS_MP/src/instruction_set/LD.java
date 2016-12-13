@@ -64,12 +64,12 @@ public class LD extends MemoryInstruction implements IConverter, IExecutor, IDep
 	}
 
 	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code, Machine machine) {
 		int index = code.indexOf(opcode);
     	
-    	int address = OpcodeUtils.rs(opcode) * OpcodeUtils.imm(opcode);
-		
-		//System.out.println("Checking rs, rt: " + rs + "," + rt);
+    	long address = machine.loadFromGPR(OpcodeUtils.rs(opcode)) + OpcodeUtils.imm(opcode);
+    	
+		System.out.println("Address: " + address);
 		int i = index - 1;
 		if(i<0) i = 0;
 		int end = index - 4;
@@ -79,9 +79,9 @@ public class LD extends MemoryInstruction implements IConverter, IExecutor, IDep
 			int currOpcode = code.get(i);
 			
 			if(((IDependencyCheck) InstructionUtils.getInstructionEnum(currOpcode).getInstructionConverter()).hasMemoryStore()){
-				int currAddress = OpcodeUtils.rs(currOpcode) * OpcodeUtils.imm(currOpcode);
+				long currAddress = machine.loadFromGPR(OpcodeUtils.rs(currOpcode)) + OpcodeUtils.imm(currOpcode);
 				 
-				//System.out.println("R type Writeback Reg - rd: " + rd);
+				System.out.println("Other address: " + currAddress);
 				if(address == currAddress){
 					return currOpcode;
 				}

@@ -7,8 +7,10 @@ import interfaces.IConverter;
 import interfaces.IDependencyCheck;
 import interfaces.IExecutor;
 import machine.EXMEM;
+import machine.IFID;
 import machine.Machine;
 import utils.OpcodeUtils;
+import utils.Stringify;
 
 public class BC extends BranchInstruction implements IConverter, IExecutor, IDependencyCheck {
 	
@@ -26,9 +28,12 @@ public class BC extends BranchInstruction implements IConverter, IExecutor, IDep
 	@Override
 	public void execute(int opcode, Machine machine) {
 		EXMEM exmem = (EXMEM) machine.getPipeline().get("EX/MEM");
+		IFID ifid = (IFID) machine.getPipeline().get("IF/ID");
 		
 		long imm = OpcodeUtils.imm(opcode);
-		exmem.setALUOutput(machine.getPC() + (imm << 2));
+		//System.out.println(Stringify.as32bitHex(ifid.NPC()));
+		//System.out.println(Stringify.as64bitHex((imm << 2)));
+		exmem.setALUOutput(ifid.NPC());
 		exmem.setCond(true);
 	}
 
@@ -55,7 +60,7 @@ public class BC extends BranchInstruction implements IConverter, IExecutor, IDep
 	}
 	
 	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code, Machine machine) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

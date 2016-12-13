@@ -5,6 +5,8 @@ package interfaces;
 
 import java.util.List;
 
+import machine.Machine;
+
 /**
  * @author Chester
  *
@@ -12,5 +14,5 @@ import java.util.List;
 public interface IDependencyCheck {
 	public boolean hasWriteBack();
 	public boolean hasMemoryStore();
-	public int HasDependency(int opcode, List<Integer> code);
+	public int HasDependency(int opcode, List<Integer> code, Machine machine);
 }

@@ -82,7 +82,7 @@ public class RType implements IDependencyCheck{
 	}
 
 	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code, Machine machine) {
 		int index = code.indexOf(opcode);
     	
     	int rs = OpcodeUtils.rs(opcode);

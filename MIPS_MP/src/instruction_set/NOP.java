@@ -51,7 +51,7 @@ public class NOP implements IConverter, IExecutor, IDependencyCheck {
 	}
 
 	@Override
-	public int HasDependency(int opcode, List<Integer> code) {
+	public int HasDependency(int opcode, List<Integer> code, Machine machine) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
