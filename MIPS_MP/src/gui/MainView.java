@@ -73,13 +73,13 @@ public class MainView extends JFrame implements DocumentListener{
     private File baseFile;
     private final JTable t_table;
     private final DefaultTableModel model;
-    private final String[] columnNames = {"#", "Instruction", "OpCode"};
+    private final String[] columnNames = {"Addr #", "Instruction", "OpCode"};
     //private final String[] pNames = {"IF", "ID", "EX", "MEM", "WB", "*"};
     private ArrayList<String> inst, labels;
     private List<Integer> opCodes;
     private ArrayList<instPipeline> pipes;
     private String path;
-    private Integer num, check;
+    private Integer codeAddr, check;
     private Machine machine;
     private HighLevelController hlc;
     
@@ -93,18 +93,19 @@ public class MainView extends JFrame implements DocumentListener{
         
         //Initialize variables
         path = "";
-        num = 0;
+        codeAddr = 4096;
         check = 0;
         inst = new ArrayList<>();
         labels = new ArrayList<>();
         opCodes = new ArrayList<>();
         pipes = new ArrayList<>();
+        machine = new Machine();
+        hlc = new HighLevelController(machine);
+        
         tf_register = new ArrayList<>();
         tf_mem = new ArrayList<>();
         lbl_register = new ArrayList<>();
         lbl_mem = new ArrayList<>();
-        machine = new Machine();
-        hlc = new HighLevelController(machine);
         
         lbl_opCode      = new JLabel("Instruction OpCodes");
         lbl_error       = new JLabel("Activity and Error Log");
@@ -141,8 +142,8 @@ public class MainView extends JFrame implements DocumentListener{
         Object data[][] = {};
         this.model = new DefaultTableModel(data, columnNames);
         this.t_table = new JTable(model);
-        t_table.getColumnModel().getColumn(0).setPreferredWidth(21);
-        t_table.getColumnModel().getColumn(1).setPreferredWidth(175);
+        t_table.getColumnModel().getColumn(0).setPreferredWidth(45);
+        t_table.getColumnModel().getColumn(1).setPreferredWidth(151);
         t_table.getColumnModel().getColumn(2).setPreferredWidth(75);
         t_table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         
@@ -320,25 +321,26 @@ public class MainView extends JFrame implements DocumentListener{
         });
         
         runSingle.addActionListener((ActionEvent e) -> {
-            /*if(inst.size() <= 0){
+            if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
             } else if(!checkIfValid()) {
                 ta_log.append("One of your textfields is too short.\n");
             } else {
-                addTable(true);
-            }*/
-            doCycle(true);
+                //addTable(true);
+                doCycle(true);
+            }
+            
         });
         
         runFull.addActionListener((ActionEvent e) -> {
-            /*if(inst.size() <= 0){
+            if(inst.size() <= 0){
                 ta_log.append("No file added yet.\n");
             } else if(!checkIfValid()){
                 ta_log.append("One of your textfields is too short.\n");
             } else {
-                addTable(false);
-            }*/
-            doCycle(false);
+                //addTable(false);
+                doCycle(false);
+            }
         });
         
         open.registerKeyboardAction((ActionEvent e) -> {open.doClick();},
@@ -419,11 +421,11 @@ public class MainView extends JFrame implements DocumentListener{
             labels = new ArrayList<>();
             pipes = new ArrayList<>();
             opCodes = new ArrayList<>();
-            num = 0;
+            codeAddr = 4096;
             check = 0;
             machine = new Machine();
             hlc = new HighLevelController(machine);
-            System.out.println("Pipes Size: "+pipes.size());
+            //System.out.println("Pipes Size: "+pipes.size());
             
             baseFile = jfc.getSelectedFile();
             path = baseFile.getPath().replaceAll(baseFile.getName(),"");
@@ -456,6 +458,7 @@ public class MainView extends JFrame implements DocumentListener{
                 if(!inst.isEmpty() /*&& dotcode*/ && valid){
                     getLabels();
                     toBackEnd();
+                    ta_log.append(inst.size()+ ( (inst.size()>1 || inst.size()<1) ? " INSTRUCTIONS RETRIEVED!\n\n" : " INSTRUCTION RETRIEVED!\n\n"));
                     List<Integer> tempo = opCodes;
                     hlc.loadCodeIntoMemory(tempo);
                 } /*else if(inst.isEmpty() && !dotcode){
@@ -611,15 +614,17 @@ public class MainView extends JFrame implements DocumentListener{
                 
                 if("00000000".equals(opCode) && !line.startsWith("NOP")) {
                     ta_log.append("Invalid instruction at line "+i+"\n");
+                } else if(codeAddr >= 12284){
+                    ta_log.append("Out of memory for code\n");
                 } else {
                     opCodes.add(opcode);
-                    updateOCTable(String.valueOf(i+1), inst.get(i), opCode);
+                    updateOCTable(inst.get(i), opCode);
                 }
             } else {
                 //ta_log.append("ERROR: Line of code may be missing a parameter\n");
                 //ta_log.append("Possible Solution: Refer to MIPS64 manual if all parameters are in place \n");
                 //ta_log.append("Possible Solution: If accessing a label, please check if label exists\n");
-                updateOCTable("X", inst.get(i), "ERROR");
+                updateOCTable(inst.get(i), "ERROR");
                 i = inst.size();
             }
             i++;
@@ -690,7 +695,7 @@ public class MainView extends JFrame implements DocumentListener{
     public boolean isRType(String inst){
         String temp0 = "\\s*([a-zA-Z]\\w\\s*:\\s+)*";
         String temp1 = "\\s*(XOR|DSUBU|SLT)\\s+";
-        String temp2 = "\\s*R([0-9]|[1-2][0-9]|3[0-1])";
+        String temp2 = "\\s*(R|r)([0-9]|[1-2][0-9]|3[0-1])";
         String temp3 = "\\s*NOP\\s*$";
         Pattern p1 = Pattern.compile(temp0
                                    + temp1
@@ -709,7 +714,7 @@ public class MainView extends JFrame implements DocumentListener{
     public boolean isIType(String inst){
         String temp0 = "\\s*([a-zA-Z]\\w\\s*:\\s+)*";
         String temp1 = "\\s*(DADDIU)\\s+";
-        String temp2 = "\\s*R([0-9]|[1-2][0-9]|3[0-1])";
+        String temp2 = "\\s*(R|r)([0-9]|[1-2][0-9]|3[0-1])";
         String temp3 = "\\s*(LD|SD)\\s+";
         String temp4 = "\\s*(BEQC)\\s+";
         String temp5 = "\\s*[a-zA-Z]\\w\\s*";
@@ -717,10 +722,10 @@ public class MainView extends JFrame implements DocumentListener{
                                      temp1
                                    + temp2 + "\\s*,\\s*"
                                    + temp2 + "\\s*,\\s*"
-                                   + "\\s*0x\\d{4}\\s*$" //Pattern match for DADDIU
+                                   + "\\s*0x([\\dA-Fa-f]){4}\\s*$" //Pattern match for DADDIU
                                    + "|"+ temp0 + temp3
                                    + temp2 + "\\s*,\\s*"
-                                   + "\\s*\\d{4}[(]"+temp2+"[)]\\s*$" //Pattern match for LD/SD
+                                   + "\\s*[3-4]([\\dA-Fa-f]){3}[(]"+temp2+"[)]\\s*$" //Pattern match for LD/SD
                                    + "|" + temp4
                                    + temp2 + "\\s*,\\s*"
                                    + temp2 + "\\s*,\\s*"
@@ -762,7 +767,8 @@ public class MainView extends JFrame implements DocumentListener{
         return line;
     }
     
-    private void updateOCTable(String line_num, String firstCol, String secondCol){
+    private void updateOCTable(String firstCol, String secondCol){
+        String line_num = Integer.toHexString(codeAddr);
         Object[] temp = new Object[3];
 	temp[0] = line_num;
 	temp[1] = firstCol;
