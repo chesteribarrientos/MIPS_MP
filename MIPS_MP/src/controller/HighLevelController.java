@@ -3,6 +3,7 @@
  */
 package controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import config.Config;
@@ -22,7 +23,8 @@ public class HighLevelController {
 	private Machine machine;
 	private int EoFCode;
 	private List<Integer> code;
-	private int lastFinishedIR;
+	//private int lastFinishedIR;
+	private List<Integer> finishedIRs;
 	private CycleFlags cycleFlags; 
         private boolean isDone;
 	//private
@@ -34,11 +36,17 @@ public class HighLevelController {
 		EoFCode = Config.CODE_START;
 		cycleFlags = new CycleFlags(); //set of flags for each cycle
 		cycleFlags.IFactive(true); //remove later
-                isDone = false;
+        isDone = false;
+        
 	}
 	
 	
 	public void loadCodeIntoMemory(List<Integer> code){
+		//reset
+		finishedIRs = new ArrayList<Integer>();
+		machine.resetMachine();
+		
+		//load code
 		this.code = code;
 		int index = Config.CODE_START;
 		for (Integer opcode: code){
@@ -74,7 +82,9 @@ public class HighLevelController {
 	
 	public void runCycle(){
 		int tempIR = 0;
-		System.out.println("Last IR Wb: " + Stringify.as32bitHex(lastFinishedIR) + " dependencyIR: " + Stringify.as32bitHex(dependencyIR));
+		if(!finishedIRs.isEmpty())
+			System.out.print("Last IR Wb: " + Stringify.as32bitHex(finishedIRs.get(finishedIRs.size()-1)));
+		System.out.println(" dependencyIR: " + Stringify.as32bitHex(dependencyIR));
 		
 		//System.out.println("Stalled: " + stalled);
                 
@@ -104,13 +114,13 @@ public class HighLevelController {
 				System.out.println("Checking for dependency");
 				dependencyIR = ic.HasDependency(ifid.IR(), code, machine);
 				if(dependencyIR != 0){
-					System.out.println("dependency found");
+					System.out.println("dependency found on: " + Stringify.as32bitHex(dependencyIR));
 					stalled = true;
 				}
 				dependencyNotYetChecked = false;
 			}
 			
-			if(lastFinishedIR == dependencyIR){ //if dependency has finished
+			if(finishedIRs.contains(dependencyIR)){ //if dependency has finished
 				stalled = false;
 				dependencyIR = 0;
 			}
@@ -138,7 +148,7 @@ public class HighLevelController {
 				System.out.println("Stalled IF");
 			}
 		}
-		lastFinishedIR = tempIR;
+		finishedIRs.add(tempIR);
 		
 		//System.out.println("eof check");
 		//System.out.println(machine.getPC());
@@ -149,7 +159,7 @@ public class HighLevelController {
 		}
 		
 		//System.out.println(code.size()-1 + " " + code.get(code.size()-1));
-		if((lastFinishedIR == code.get(code.size()-1))){
+		if((finishedIRs.contains(code.get(code.size()-1)))){
 			System.out.println("Code Done");
 			setDone();
         }
