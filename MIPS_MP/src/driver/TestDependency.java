@@ -109,7 +109,7 @@ public class TestDependency {
 		Print.pipeline(machine.getPipeline());
 		System.out.println("-------------------------------------------");
 		
-		System.out.println("R5: " + Stringify.as64bitHex(machine.loadFromGPR(6)));
+		System.out.println("R3: " + Stringify.as64bitHex(machine.loadFromGPR(3)));
 	}
 
 }

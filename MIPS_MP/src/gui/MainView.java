@@ -365,12 +365,12 @@ public class MainView extends JFrame implements DocumentListener{
     @Override
     public void insertUpdate(DocumentEvent e) {
         //System.out.println("inserted");
-        updateLog(e);
+        //updateLog(e);
     }
     
     public void removeUpdate(DocumentEvent e) {
         //System.out.println("removed");
-        updateLog(e);
+        //updateLog(e);
     }
     
     public void changedUpdate(DocumentEvent e) {
@@ -382,7 +382,7 @@ public class MainView extends JFrame implements DocumentListener{
         int len = doc.getLength();
         //System.out.println(len);
         if( 16 == len ){
-            System.out.println("inserted\n");
+            //System.out.println("inserted\n");
             for(int i=0; i<tf_register.size(); i++){
                 long temp = Long.parseLong(tf_register.get(i).getText(),16);
                 machine.storeToGPR(i, temp);
